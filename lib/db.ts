@@ -1,10 +1,10 @@
 import { neon } from '@neondatabase/serverless';
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL environment variable is not set');
-}
+// Initialize Neon client - allow build to succeed without DATABASE_URL
+// Database features will be unavailable until URL is configured
+const databaseUrl = process.env.DATABASE_URL || 'postgresql://placeholder';
 
-export const sql = neon(process.env.DATABASE_URL);
+export const sql = neon(databaseUrl);
 
 // Initialize database tables
 export async function initDatabase() {
