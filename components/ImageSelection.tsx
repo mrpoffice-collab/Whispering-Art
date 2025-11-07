@@ -13,6 +13,9 @@ export default function ImageSelection() {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [promptCopied, setPromptCopied] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
+  const [isLoadingUrl, setIsLoadingUrl] = useState(false);
 
   if (!intent) return null;
 
@@ -36,6 +39,7 @@ export default function ImageSelection() {
       warm: 'warm, cozy, inviting',
       peaceful: 'peaceful, calm, tranquil',
       joyful: 'joyful, vibrant, happy',
+      lighthearted: 'lighthearted, cheerful, carefree',
     };
 
     const occasionTheme: Record<string, string> = {
@@ -49,21 +53,29 @@ export default function ImageSelection() {
       encouragement: 'encouragement and strength',
     };
 
-    return `${styleMap[intent.style]}, ${moodMap[intent.mood]} atmosphere, ${occasionTheme[intent.occasion]}, greeting card design, elegant composition, white background, high quality --ar 5:7`;
+    // If specific occasion is provided, use it for more targeted imagery
+    const occasionDetail = intent.specificOccasion
+      ? `${intent.specificOccasion} themed, ${occasionTheme[intent.occasion]}`
+      : occasionTheme[intent.occasion];
+
+    return `${styleMap[intent.style]}, ${moodMap[intent.mood]} atmosphere, ${occasionDetail}, greeting card design, elegant composition, white background, high quality --ar 5:7`;
   };
 
   const handleOpenMidjourney = () => {
     const prompt = generateMidjourneyPrompt();
     // Copy prompt to clipboard
     navigator.clipboard.writeText(prompt);
-    // Open MidJourney Organize
-    window.open('https://www.midjourney.com/imagine', '_blank');
+    setPromptCopied(true);
+    setTimeout(() => setPromptCopied(false), 3000);
+    // Open MidJourney Alpha
+    window.open('https://alpha.midjourney.com/imagine', '_blank');
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedImage(file);
+      setImageUrl(''); // Clear URL if file is selected
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -72,38 +84,72 @@ export default function ImageSelection() {
     }
   };
 
+  const handleUrlSubmit = async () => {
+    if (!imageUrl.trim()) return;
+
+    setIsLoadingUrl(true);
+    try {
+      // Basic URL validation
+      const url = new URL(imageUrl);
+      if (!url.hostname.includes('midjourney') && !url.hostname.includes('cdn')) {
+        alert('Please use a MidJourney image URL');
+        setIsLoadingUrl(false);
+        return;
+      }
+
+      // Set preview directly - backend will handle fetching
+      setImagePreview(imageUrl);
+      setUploadedImage(null);
+      setIsLoadingUrl(false);
+    } catch (error) {
+      console.error('Error with URL:', error);
+      alert('Invalid URL format. Please paste the complete image URL from MidJourney.');
+      setIsLoadingUrl(false);
+    }
+  };
+
   const handleContinue = async () => {
-    if (!uploadedImage || !imagePreview) return;
+    if (!imagePreview) return;
 
     setIsUploading(true);
 
     try {
-      // Upload to Vercel Blob
-      const formData = new FormData();
-      formData.append('file', uploadedImage);
+      let blobUrl = imagePreview; // Temporary: use preview URL
 
-      const response = await fetch('/api/upload-image', {
-        method: 'POST',
-        body: formData,
-      });
+      // TODO: Implement after deployment
+      // if (uploadedImage) {
+      //   const formData = new FormData();
+      //   formData.append('file', uploadedImage);
+      //   const response = await fetch('/api/upload-image', {
+      //     method: 'POST',
+      //     body: formData,
+      //   });
+      //   const data = await response.json();
+      //   blobUrl = data.url;
+      // } else if (imageUrl) {
+      //   const response = await fetch('/api/upload-image', {
+      //     method: 'POST',
+      //     headers: { 'Content-Type': 'application/json' },
+      //     body: JSON.stringify({ imageUrl }),
+      //   });
+      //   const data = await response.json();
+      //   blobUrl = data.url;
+      // }
 
-      const data = await response.json();
+      const cardImage: CardImage = {
+        id: crypto.randomUUID(),
+        url: imagePreview,
+        blobUrl: blobUrl,
+        prompt: generateMidjourneyPrompt(),
+        aspectRatio: '5:7',
+        createdAt: new Date(),
+      };
 
-      if (data.url) {
-        const cardImage: CardImage = {
-          id: crypto.randomUUID(),
-          url: imagePreview,
-          blobUrl: data.url,
-          prompt: generateMidjourneyPrompt(),
-          aspectRatio: '5:7',
-          createdAt: new Date(),
-        };
-
-        setImage(cardImage);
-      }
+      setImage(cardImage);
+      setStep(3); // Move to next step
     } catch (error) {
       console.error('Upload failed:', error);
-      alert('Failed to upload image. Please try again.');
+      alert('Failed to process image. Please try again.');
     } finally {
       setIsUploading(false);
     }
@@ -114,103 +160,152 @@ export default function ImageSelection() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-4xl font-playfair text-whisper-charcoal mb-3">
-          Find your art
+    <div className="max-w-4xl mx-auto watermark-whisper">
+      {/* Title - soft glow */}
+      <div className="text-center mb-16">
+        <h2 className="text-5xl font-cormorant font-light text-whisper-inkBlack mb-4 tracking-wide">
+          Discover your image
         </h2>
-        <p className="text-lg text-whisper-charcoal/70">
-          Create or select an image that speaks to your intention
+        <p className="text-lg font-cormorant italic text-whisper-plum/70">
+          Every masterpiece begins with inspiration
         </p>
       </div>
 
-      {/* Selected Intent Summary */}
-      <div className="bg-white/60 backdrop-blur rounded-lg p-5 mb-8 border border-whisper-sage/30">
-        <div className="flex gap-4 text-sm text-whisper-charcoal/70">
-          <span className="font-medium">Occasion:</span>
-          <span className="capitalize">{intent.occasion}</span>
-          <span className="mx-2">•</span>
-          <span className="font-medium">Mood:</span>
-          <span className="capitalize">{intent.mood}</span>
-          <span className="mx-2">•</span>
-          <span className="font-medium">Style:</span>
-          <span className="capitalize">{intent.style.replace('-', ' ')}</span>
+      {/* Selected Intent Summary - subtle paper card */}
+      <div className="paper-card p-6 mb-12 border-none">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-cormorant text-whisper-inkBlack/60">
+          <span><span className="text-whisper-plum">Occasion:</span> <span className="capitalize italic">{intent.occasion}</span></span>
+          <span className="text-whisper-plum/30">•</span>
+          <span><span className="text-whisper-plum">Mood:</span> <span className="capitalize italic">{intent.mood}</span></span>
+          <span className="text-whisper-plum/30">•</span>
+          <span><span className="text-whisper-plum">Style:</span> <span className="capitalize italic">{intent.style.replace('-', ' ')}</span></span>
         </div>
       </div>
 
-      {/* MidJourney Section */}
-      <div className="bg-white rounded-lg p-8 shadow-lg mb-8">
-        <h3 className="text-2xl font-playfair text-whisper-charcoal mb-4">
-          Generate with MidJourney
+      {/* MidJourney Section - elegant paper card */}
+      <div className="paper-card p-8 mb-8 hover-shimmer">
+        <h3 className="text-3xl font-cormorant font-light text-whisper-inkBlack mb-6 text-center">
+          Create with MidJourney
         </h3>
-        <div className="bg-whisper-cream p-4 rounded-lg mb-4">
-          <p className="text-sm text-whisper-charcoal/80 mb-2 font-medium">
-            Suggested prompt:
+
+        <div className="bg-whisper-parchment/50 p-5 rounded-xl mb-6 border border-whisper-plum/10">
+          <p className="text-sm font-cormorant text-whisper-plum mb-3 tracking-wide">
+            Your curated prompt:
           </p>
-          <p className="text-sm text-whisper-charcoal/70 font-mono bg-white p-3 rounded">
+          <p className="text-sm font-cormorant text-whisper-inkBlack/70 leading-relaxed italic">
             {generateMidjourneyPrompt()}
           </p>
         </div>
+
         <button
           onClick={handleOpenMidjourney}
-          className="w-full bg-whisper-sage text-white py-3 rounded-lg hover:bg-whisper-gold transition-all duration-300 font-medium"
+          className="w-full px-8 py-4 rounded-full font-cormorant text-lg transition-all duration-150 bg-whisper-plum text-whisper-parchment hover-shimmer click-settle shadow-paper-lg glow-soft"
         >
-          Open MidJourney & Copy Prompt
+          {promptCopied ? '✓ Prompt Copied — Opening MidJourney' : 'Open MidJourney & Copy Prompt'}
         </button>
-        <p className="text-xs text-whisper-charcoal/60 mt-3 text-center">
-          The prompt has been copied to your clipboard. Generate your image, then upload it below.
+
+        <p className="text-xs font-cormorant text-whisper-inkBlack/50 mt-4 text-center italic">
+          Generate your masterpiece, then return to upload
         </p>
       </div>
 
-      {/* Upload Section */}
-      <div className="bg-white rounded-lg p-8 shadow-lg">
-        <h3 className="text-2xl font-playfair text-whisper-charcoal mb-4">
-          Upload your chosen image
+      {/* Upload Section - elegant paper card */}
+      <div className="paper-card p-8">
+        <h3 className="text-3xl font-cormorant font-light text-whisper-inkBlack mb-6 text-center">
+          Add your artwork
         </h3>
 
         {!imagePreview ? (
-          <label className="block border-2 border-dashed border-whisper-sage/40 rounded-lg p-12 text-center cursor-pointer hover:border-whisper-sage hover:bg-whisper-cream/30 transition-all duration-300">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-            <div className="text-whisper-charcoal/60">
-              <svg
-                className="mx-auto h-12 w-12 mb-4"
-                stroke="currentColor"
-                fill="none"
-                viewBox="0 0 48 48"
-              >
-                <path
-                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+          <div className="space-y-6">
+            {/* URL Input Option */}
+            <div>
+              <p className="text-sm font-cormorant text-whisper-plum mb-3 text-center">
+                Paste MidJourney image URL
+              </p>
+              <div className="flex gap-3">
+                <input
+                  type="url"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://cdn.midjourney.com/..."
+                  className="flex-1 px-4 py-3 rounded-full border-2 border-whisper-plum/20 font-cormorant focus:outline-none focus:border-whisper-plum/40 transition-all duration-150"
+                  onKeyDown={(e) => e.key === 'Enter' && handleUrlSubmit()}
                 />
-              </svg>
-              <p className="text-lg mb-2">Click to upload your image</p>
-              <p className="text-sm">PNG, JPG up to 10MB</p>
+                <button
+                  onClick={handleUrlSubmit}
+                  disabled={!imageUrl.trim() || isLoadingUrl}
+                  className={`px-8 py-3 rounded-full font-cormorant transition-all duration-150 ${
+                    imageUrl.trim() && !isLoadingUrl
+                      ? 'bg-whisper-plum text-whisper-parchment hover-shimmer click-settle'
+                      : 'bg-whisper-sage/20 text-whisper-plum/40 cursor-not-allowed'
+                  }`}
+                >
+                  {isLoadingUrl ? 'Loading...' : 'Load'}
+                </button>
+              </div>
             </div>
-          </label>
+
+            {/* Divider */}
+            <div className="flex items-center gap-4">
+              <div className="flex-1 h-px bg-whisper-plum/10"></div>
+              <span className="text-sm font-cormorant italic text-whisper-plum/50">or</span>
+              <div className="flex-1 h-px bg-whisper-plum/10"></div>
+            </div>
+
+            {/* File Upload Option */}
+            <label className="block border-2 border-dashed border-whisper-plum/20 rounded-2xl p-12 text-center cursor-pointer hover:border-whisper-plum/40 hover:bg-whisper-blushRose/10 transition-all duration-150 hover-shimmer">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <div className="text-whisper-inkBlack/50">
+                <svg
+                  className="mx-auto h-12 w-12 mb-4 text-whisper-plum/40"
+                  stroke="currentColor"
+                  fill="none"
+                  viewBox="0 0 48 48"
+                  strokeWidth={1.5}
+                >
+                  <path
+                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <p className="text-lg font-cormorant mb-1 text-whisper-inkBlack/70">Upload from computer</p>
+                <p className="text-sm font-cormorant italic text-whisper-plum/60">PNG or JPG, up to 10MB</p>
+              </div>
+            </label>
+          </div>
         ) : (
           <div>
             <div className="relative w-full max-w-md mx-auto mb-6">
-              <Image
-                src={imagePreview}
-                alt="Selected card image"
-                width={400}
-                height={560}
-                className="rounded-lg shadow-lg"
-              />
+              {imageUrl ? (
+                // Display URL image using img tag to avoid Next.js Image optimization issues
+                <img
+                  src={imagePreview}
+                  alt="Selected card image"
+                  className="w-full h-auto rounded-2xl shadow-paper-lg"
+                />
+              ) : (
+                <Image
+                  src={imagePreview}
+                  alt="Selected card image"
+                  width={400}
+                  height={560}
+                  className="rounded-2xl shadow-paper-lg"
+                />
+              )}
             </div>
             <button
               onClick={() => {
                 setUploadedImage(null);
                 setImagePreview(null);
+                setImageUrl('');
               }}
-              className="text-whisper-charcoal/60 hover:text-whisper-charcoal text-sm mb-4 block mx-auto"
+              className="font-cormorant text-whisper-plum/70 hover:text-whisper-plum text-sm mb-4 block mx-auto hover-shimmer italic"
             >
               Choose a different image
             </button>
@@ -219,26 +314,26 @@ export default function ImageSelection() {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex gap-4 justify-between mt-8">
+      <div className="flex gap-4 justify-between mt-12">
         <button
           onClick={handleBack}
-          className="px-8 py-3 rounded-full border-2 border-whisper-sage text-whisper-charcoal hover:bg-whisper-sage hover:text-white transition-all duration-300"
+          className="px-10 py-3 rounded-full border-2 border-whisper-plum/30 font-cormorant text-whisper-inkBlack hover:bg-whisper-plum/10 hover:border-whisper-plum/50 transition-all duration-150 hover-shimmer click-settle"
         >
           Back
         </button>
         <button
           onClick={handleContinue}
-          disabled={!uploadedImage || isUploading}
+          disabled={!imagePreview || isUploading}
           className={`
-            px-10 py-3 rounded-full font-medium transition-all duration-300
+            px-12 py-4 rounded-full font-cormorant text-lg transition-all duration-150
             ${
-              uploadedImage && !isUploading
-                ? 'bg-whisper-sage text-white hover:bg-whisper-gold hover:scale-105 shadow-lg'
-                : 'bg-whisper-sage/30 text-whisper-charcoal/40 cursor-not-allowed'
+              imagePreview && !isUploading
+                ? 'bg-whisper-plum text-whisper-parchment hover-shimmer click-settle shadow-paper-lg glow-soft'
+                : 'bg-whisper-sage/20 text-whisper-plum/40 cursor-not-allowed'
             }
           `}
         >
-          {isUploading ? 'Uploading...' : 'Continue to Text Generation'}
+          {isUploading ? 'Preparing your image...' : 'Continue'}
         </button>
       </div>
     </div>

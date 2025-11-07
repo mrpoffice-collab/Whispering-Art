@@ -12,9 +12,13 @@ export default function DesignComposition() {
   const setFinalDesign = useCardStore((state) => state.setFinalDesign);
   const setStep = useCardStore((state) => state.setStep);
 
-  const [fontFamily, setFontFamily] = useState<'lora' | 'playfair'>('playfair');
-  const [signatureFont, setSignatureFont] = useState<'greatVibes' | 'allura'>('allura');
+  const [fontFamily, setFontFamily] = useState<'cormorant' | 'libreBaskerville'>('cormorant');
+  const [signatureFont, setSignatureFont] = useState<'greatVibes' | 'allura' | 'alexBrush' | 'pinyonScript' | 'sacramento' | 'dancingScript'>('greatVibes');
   const [alignment, setAlignment] = useState<'left' | 'center' | 'right'>('center');
+  const [showFront, setShowFront] = useState(true);
+  const [textPosition, setTextPosition] = useState<'bottom' | 'top' | 'center'>('bottom');
+  const [overlayStyle, setOverlayStyle] = useState<'gradient' | 'scrim' | 'frame' | 'none'>('gradient');
+  const [frameStyle, setFrameStyle] = useState<'thick' | 'thin' | 'vignette' | 'corners'>('thick');
 
   if (!intent || !selectedImage || !generatedText) return null;
 
@@ -30,12 +34,16 @@ export default function DesignComposition() {
         proseSize: 'base',
         signatureFont,
         alignment,
+        textPosition,
+        overlayStyle,
+        frameStyle,
       },
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     setFinalDesign(design);
+    setStep(5); // Navigate to checkout
   };
 
   const handleBack = () => {
@@ -43,149 +51,318 @@ export default function DesignComposition() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-4xl font-playfair text-whisper-charcoal mb-3">
-          Compose your card
+    <div className="max-w-6xl mx-auto watermark-whisper">
+      {/* Title */}
+      <div className="text-center mb-16">
+        <h2 className="text-5xl font-cormorant font-light text-whisper-inkBlack mb-4 tracking-wide">
+          Your masterpiece awaits
         </h2>
-        <p className="text-lg text-whisper-charcoal/70">
-          Fine-tune the design before printing
+        <p className="text-lg font-cormorant italic text-whisper-plum/70">
+          Fine-tune the final touches before bringing it to life
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8">
-        {/* Preview Section */}
-        <div>
-          <h3 className="text-xl font-playfair text-whisper-charcoal mb-4">
+      <div className="grid lg:grid-cols-[minmax(300px,400px)_1fr] gap-8 items-start">
+        {/* Preview Section - Fixed smaller width */}
+        <div className="sticky top-4">
+          <h3 className="text-xl font-cormorant font-light text-whisper-inkBlack mb-4 text-center">
             Card Preview
           </h3>
 
-          {/* Front of Card */}
-          <div className="bg-white rounded-lg shadow-xl p-8 mb-6">
-            <p className="text-xs text-whisper-charcoal/50 mb-4 text-center">
+          {/* Front/Inside Toggle */}
+          <div className="flex gap-2 mb-4 justify-center">
+            <button
+              onClick={() => setShowFront(true)}
+              className={`px-6 py-2 rounded-full font-cormorant transition-all duration-150 ${
+                showFront
+                  ? 'bg-whisper-plum text-whisper-parchment shadow-paper'
+                  : 'bg-whisper-sage/20 text-whisper-plum/60 hover:bg-whisper-sage/30'
+              }`}
+            >
               Front
-            </p>
-            <div className="aspect-[5/7] bg-whisper-cream rounded-lg shadow-lg overflow-hidden relative">
-              <Image
-                src={selectedImage.url}
-                alt="Card design"
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-              <div className={`absolute bottom-0 left-0 right-0 p-8 text-${alignment}`}>
-                <p
-                  className={`font-${fontFamily} text-3xl text-white drop-shadow-lg leading-tight`}
-                >
-                  {generatedText.frontCaption}
-                </p>
-              </div>
-            </div>
+            </button>
+            <button
+              onClick={() => setShowFront(false)}
+              className={`px-6 py-2 rounded-full font-cormorant transition-all duration-150 ${
+                !showFront
+                  ? 'bg-whisper-plum text-whisper-parchment shadow-paper'
+                  : 'bg-whisper-sage/20 text-whisper-plum/60 hover:bg-whisper-sage/30'
+              }`}
+            >
+              Inside
+            </button>
           </div>
 
-          {/* Inside of Card */}
-          <div className="bg-white rounded-lg shadow-xl p-8">
-            <p className="text-xs text-whisper-charcoal/50 mb-4 text-center">
-              Inside
-            </p>
-            <div className="aspect-[5/7] bg-whisper-cream rounded-lg shadow-lg p-safe flex flex-col justify-center">
-              <div className={`text-${alignment}`}>
-                <p className={`font-${fontFamily} text-whisper-charcoal leading-relaxed mb-8 text-lg`}>
-                  {generatedText.insideProse}
-                </p>
-                <p className={`font-${signatureFont} text-2xl text-whisper-charcoal/80`}>
-                  {generatedText.signature}
-                </p>
+          {/* Card Display */}
+          <div className="paper-card p-8">
+            {showFront ? (
+              // Front of Card
+              <div className="aspect-[5/7] bg-whisper-parchment rounded-2xl shadow-paper-lg overflow-hidden relative">
+                {selectedImage.url.startsWith('http') ? (
+                  <img
+                    src={selectedImage.url}
+                    alt="Card artwork"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Image
+                    src={selectedImage.url}
+                    alt="Card artwork"
+                    fill
+                    className="object-cover"
+                  />
+                )}
+
+                {/* Overlay styles */}
+                {overlayStyle === 'gradient' && (
+                  <>
+                    {textPosition === 'bottom' && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-whisper-inkBlack/75 via-whisper-inkBlack/30 to-transparent" />
+                    )}
+                    {textPosition === 'top' && (
+                      <div className="absolute inset-0 bg-gradient-to-b from-whisper-inkBlack/75 via-whisper-inkBlack/30 to-transparent" />
+                    )}
+                    {textPosition === 'center' && (
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          background: 'radial-gradient(circle, rgba(13,11,11,0.5) 0%, rgba(13,11,11,0.3) 40%, transparent 70%)'
+                        }}
+                      />
+                    )}
+                  </>
+                )}
+                {overlayStyle === 'scrim' && (
+                  <div className="absolute inset-0 bg-whisper-inkBlack/45 backdrop-blur-[1px]" />
+                )}
+                {overlayStyle === 'frame' && (
+                  <>
+                    {frameStyle === 'thick' && (
+                      <div className="absolute inset-0 border-[20px] border-whisper-parchment/90 shadow-[inset_0_0_40px_rgba(13,11,11,0.3)]" />
+                    )}
+                    {frameStyle === 'thin' && (
+                      <div className="absolute inset-0 border-[3px] border-whisper-parchment/95 shadow-[inset_0_0_20px_rgba(13,11,11,0.2)]" />
+                    )}
+                    {frameStyle === 'vignette' && (
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          boxShadow: 'inset 0 0 80px 40px rgba(13,11,11,0.6)'
+                        }}
+                      />
+                    )}
+                    {frameStyle === 'corners' && (
+                      <>
+                        <div className="absolute top-0 left-0 w-16 h-16 border-t-4 border-l-4 border-whisper-parchment/90" />
+                        <div className="absolute top-0 right-0 w-16 h-16 border-t-4 border-r-4 border-whisper-parchment/90" />
+                        <div className="absolute bottom-0 left-0 w-16 h-16 border-b-4 border-l-4 border-whisper-parchment/90" />
+                        <div className="absolute bottom-0 right-0 w-16 h-16 border-b-4 border-r-4 border-whisper-parchment/90" />
+                      </>
+                    )}
+                  </>
+                )}
+                {/* overlayStyle === 'none' shows no overlay */}
+
+                {/* Text positioning */}
+                <div className={`absolute left-0 right-0 px-10 flex items-center justify-${alignment === 'left' ? 'start' : alignment === 'right' ? 'end' : 'center'} ${
+                  textPosition === 'bottom' ? 'bottom-0 pb-10' :
+                  textPosition === 'top' ? 'top-0 pt-10' :
+                  'top-1/2 -translate-y-1/2'
+                }`}>
+                  <div className={`${overlayStyle === 'frame' ? 'max-w-[70%]' : 'w-full'} ${alignment === 'center' ? 'text-center' : alignment === 'right' ? 'text-right' : 'text-left'}`}>
+                    <p
+                      className="text-3xl text-whisper-parchment leading-tight whitespace-pre-line"
+                      style={{
+                        fontFamily: fontFamily === 'cormorant' ? 'var(--font-cormorant), serif' : 'var(--font-baskerville), serif',
+                        textShadow: overlayStyle === 'none'
+                          ? '1px 1px 3px rgba(13,11,11,0.8), 0 0 8px rgba(13,11,11,0.6)'
+                          : overlayStyle === 'frame' && frameStyle === 'vignette'
+                          ? '1px 1px 4px rgba(13,11,11,0.7)'
+                          : overlayStyle === 'frame'
+                          ? '1px 1px 4px rgba(13,11,11,0.6)'
+                          : '1px 1px 3px rgba(13,11,11,0.5)'
+                      }}
+                    >
+                      {generatedText.frontCaption}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              // Inside of Card
+              <div className="aspect-[5/7] bg-whisper-parchment rounded-2xl shadow-paper-lg p-10 flex flex-col justify-center">
+                <div className={`${alignment === 'center' ? 'text-center' : alignment === 'right' ? 'text-right' : 'text-left'}`}>
+                  <p
+                    className="text-whisper-inkBlack leading-relaxed mb-8 text-lg"
+                    style={{
+                      fontFamily: fontFamily === 'cormorant' ? 'var(--font-cormorant), serif' : 'var(--font-baskerville), serif'
+                    }}
+                  >
+                    {generatedText.insideProse}
+                  </p>
+                  <p
+                    className="text-4xl text-whisper-plum whitespace-pre-line"
+                    style={{
+                      fontFamily:
+                        signatureFont === 'greatVibes' ? 'var(--font-great-vibes), cursive' :
+                        signatureFont === 'allura' ? 'var(--font-allura), cursive' :
+                        signatureFont === 'alexBrush' ? 'var(--font-alex-brush), cursive' :
+                        signatureFont === 'pinyonScript' ? 'var(--font-pinyon-script), cursive' :
+                        signatureFont === 'sacramento' ? 'var(--font-sacramento), cursive' :
+                        'var(--font-dancing-script), cursive'
+                    }}
+                  >
+                    {generatedText.signature?.replace(',', ',\n')}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
+
+          <p className="text-xs font-cormorant text-whisper-plum/60 mt-4 text-center italic">
+            Toggle between views to see both sides of your card
+          </p>
         </div>
 
         {/* Controls Section */}
         <div>
-          <h3 className="text-xl font-playfair text-whisper-charcoal mb-4">
-            Design Controls
+          <h3 className="text-xl font-cormorant font-light text-whisper-inkBlack mb-4 text-center">
+            Design Refinements
           </h3>
 
           {/* Font Family */}
-          <div className="bg-white rounded-lg p-6 shadow-lg mb-6">
-            <h4 className="font-playfair text-whisper-charcoal mb-3">
+          <div className="paper-card p-4 mb-4">
+            <h4 className="font-cormorant text-whisper-plum mb-3 text-base">
               Body Font
             </h4>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               <button
-                onClick={() => setFontFamily('lora')}
+                onClick={() => setFontFamily('cormorant')}
                 className={`
-                  p-4 rounded-lg border-2 transition-all
+                  p-5 rounded-xl border-2 transition-all duration-150
                   ${
-                    fontFamily === 'lora'
-                      ? 'border-whisper-sage bg-whisper-sage/10'
-                      : 'border-whisper-sage/30 hover:border-whisper-sage'
+                    fontFamily === 'cormorant'
+                      ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper'
+                      : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer'
                   }
                 `}
               >
-                <p className="font-lora text-lg">Lora</p>
-                <p className="font-lora text-sm text-whisper-charcoal/70">
-                  Elegant serif
+                <p className="font-cormorant text-xl text-whisper-inkBlack mb-1">Cormorant</p>
+                <p className="font-cormorant text-sm text-whisper-plum/60 italic">
+                  Elegant & flowing
                 </p>
               </button>
               <button
-                onClick={() => setFontFamily('playfair')}
+                onClick={() => setFontFamily('libreBaskerville')}
                 className={`
-                  p-4 rounded-lg border-2 transition-all
+                  p-5 rounded-xl border-2 transition-all duration-150
                   ${
-                    fontFamily === 'playfair'
-                      ? 'border-whisper-sage bg-whisper-sage/10'
-                      : 'border-whisper-sage/30 hover:border-whisper-sage'
+                    fontFamily === 'libreBaskerville'
+                      ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper'
+                      : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer'
                   }
                 `}
               >
-                <p className="font-playfair text-lg">Playfair</p>
-                <p className="font-playfair text-sm text-whisper-charcoal/70">
-                  Classic beauty
+                <p className="font-libreBaskerville text-xl text-whisper-inkBlack mb-1">
+                  Libre Baskerville
+                </p>
+                <p className="font-libreBaskerville text-sm text-whisper-plum/60 italic">
+                  Classic serif
                 </p>
               </button>
             </div>
           </div>
 
           {/* Signature Font */}
-          <div className="bg-white rounded-lg p-6 shadow-lg mb-6">
-            <h4 className="font-playfair text-whisper-charcoal mb-3">
-              Signature Font
+          <div className="paper-card p-4 mb-4">
+            <h4 className="font-cormorant text-whisper-plum mb-3 text-base">
+              Signature Style
             </h4>
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setSignatureFont('greatVibes')}
                 className={`
-                  p-4 rounded-lg border-2 transition-all
+                  p-4 rounded-xl border-2 transition-all duration-150
                   ${
                     signatureFont === 'greatVibes'
-                      ? 'border-whisper-sage bg-whisper-sage/10'
-                      : 'border-whisper-sage/30 hover:border-whisper-sage'
+                      ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper'
+                      : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer'
                   }
                 `}
               >
-                <p className="font-greatVibes text-2xl">Great Vibes</p>
+                <p className="font-greatVibes text-2xl text-whisper-inkBlack">Great Vibes</p>
               </button>
               <button
                 onClick={() => setSignatureFont('allura')}
                 className={`
-                  p-4 rounded-lg border-2 transition-all
+                  p-4 rounded-xl border-2 transition-all duration-150
                   ${
                     signatureFont === 'allura'
-                      ? 'border-whisper-sage bg-whisper-sage/10'
-                      : 'border-whisper-sage/30 hover:border-whisper-sage'
+                      ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper'
+                      : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer'
                   }
                 `}
               >
-                <p className="font-allura text-2xl">Allura</p>
+                <p className="font-allura text-2xl text-whisper-inkBlack">Allura</p>
+              </button>
+              <button
+                onClick={() => setSignatureFont('alexBrush')}
+                className={`
+                  p-4 rounded-xl border-2 transition-all duration-150
+                  ${
+                    signatureFont === 'alexBrush'
+                      ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper'
+                      : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer'
+                  }
+                `}
+              >
+                <p className="font-alexBrush text-2xl text-whisper-inkBlack">Alex Brush</p>
+              </button>
+              <button
+                onClick={() => setSignatureFont('pinyonScript')}
+                className={`
+                  p-4 rounded-xl border-2 transition-all duration-150
+                  ${
+                    signatureFont === 'pinyonScript'
+                      ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper'
+                      : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer'
+                  }
+                `}
+              >
+                <p className="font-pinyonScript text-2xl text-whisper-inkBlack">Pinyon Script</p>
+              </button>
+              <button
+                onClick={() => setSignatureFont('sacramento')}
+                className={`
+                  p-4 rounded-xl border-2 transition-all duration-150
+                  ${
+                    signatureFont === 'sacramento'
+                      ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper'
+                      : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer'
+                  }
+                `}
+              >
+                <p className="font-sacramento text-2xl text-whisper-inkBlack">Sacramento</p>
+              </button>
+              <button
+                onClick={() => setSignatureFont('dancingScript')}
+                className={`
+                  p-4 rounded-xl border-2 transition-all duration-150
+                  ${
+                    signatureFont === 'dancingScript'
+                      ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper'
+                      : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer'
+                  }
+                `}
+              >
+                <p className="font-dancingScript text-2xl text-whisper-inkBlack">Dancing Script</p>
               </button>
             </div>
           </div>
 
-          {/* Alignment */}
-          <div className="bg-white rounded-lg p-6 shadow-lg mb-6">
-            <h4 className="font-playfair text-whisper-charcoal mb-3">
+          {/* Text Alignment */}
+          <div className="paper-card p-4 mb-4">
+            <h4 className="font-cormorant text-whisper-plum mb-3 text-base">
               Text Alignment
             </h4>
             <div className="grid grid-cols-3 gap-3">
@@ -194,11 +371,11 @@ export default function DesignComposition() {
                   key={align}
                   onClick={() => setAlignment(align)}
                   className={`
-                    p-4 rounded-lg border-2 transition-all capitalize
+                    p-4 rounded-xl border-2 transition-all duration-150 capitalize font-cormorant
                     ${
                       alignment === align
-                        ? 'border-whisper-sage bg-whisper-sage/10'
-                        : 'border-whisper-sage/30 hover:border-whisper-sage'
+                        ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper text-whisper-inkBlack'
+                        : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer text-whisper-plum/70'
                     }
                   `}
                 >
@@ -208,32 +385,154 @@ export default function DesignComposition() {
             </div>
           </div>
 
-          {/* Design Standards Note */}
-          <div className="bg-whisper-blush/20 rounded-lg p-6">
-            <h4 className="font-playfair text-whisper-charcoal mb-2 text-sm">
-              Design Standards
+          {/* Text Position (Front Card) */}
+          <div className="paper-card p-4 mb-4">
+            <h4 className="font-cormorant text-whisper-plum mb-3 text-base">
+              Caption Position
             </h4>
-            <ul className="text-xs text-whisper-charcoal/70 space-y-1">
-              <li>• 0.25" safe margins for printing</li>
+            <div className="grid grid-cols-3 gap-3">
+              {(['top', 'center', 'bottom'] as const).map((pos) => (
+                <button
+                  key={pos}
+                  onClick={() => setTextPosition(pos)}
+                  className={`
+                    p-4 rounded-xl border-2 transition-all duration-150 capitalize font-cormorant
+                    ${
+                      textPosition === pos
+                        ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper text-whisper-inkBlack'
+                        : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer text-whisper-plum/70'
+                    }
+                  `}
+                >
+                  {pos}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs font-cormorant text-whisper-plum/60 mt-3 italic text-center">
+              Position text where it reads best with your image
+            </p>
+          </div>
+
+          {/* Overlay Style (Front Card) */}
+          <div className="paper-card p-4 mb-4">
+            <h4 className="font-cormorant text-whisper-plum mb-3 text-base">
+              Image Treatment
+            </h4>
+            <div className="space-y-2">
+              <button
+                onClick={() => setOverlayStyle('none')}
+                className={`
+                  w-full p-3 rounded-xl border-2 transition-all duration-150 font-cormorant text-left
+                  ${
+                    overlayStyle === 'none'
+                      ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper text-whisper-inkBlack'
+                      : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer text-whisper-plum/70'
+                  }
+                `}
+              >
+                <p className="font-medium">None</p>
+                <p className="text-xs italic">Pure image with strong text shadows</p>
+              </button>
+              <button
+                onClick={() => setOverlayStyle('gradient')}
+                className={`
+                  w-full p-3 rounded-xl border-2 transition-all duration-150 font-cormorant text-left
+                  ${
+                    overlayStyle === 'gradient'
+                      ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper text-whisper-inkBlack'
+                      : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer text-whisper-plum/70'
+                  }
+                `}
+              >
+                <p className="font-medium">Gradient Overlay</p>
+                <p className="text-xs italic">Soft darkening where text appears</p>
+              </button>
+              <button
+                onClick={() => setOverlayStyle('scrim')}
+                className={`
+                  w-full p-3 rounded-xl border-2 transition-all duration-150 font-cormorant text-left
+                  ${
+                    overlayStyle === 'scrim'
+                      ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper text-whisper-inkBlack'
+                      : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer text-whisper-plum/70'
+                  }
+                `}
+              >
+                <p className="font-medium">Subtle Scrim</p>
+                <p className="text-xs italic">Gentle veil over entire image</p>
+              </button>
+              <button
+                onClick={() => setOverlayStyle('frame')}
+                className={`
+                  w-full p-3 rounded-xl border-2 transition-all duration-150 font-cormorant text-left
+                  ${
+                    overlayStyle === 'frame'
+                      ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper text-whisper-inkBlack'
+                      : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer text-whisper-plum/70'
+                  }
+                `}
+              >
+                <p className="font-medium">Paper Frame</p>
+                <p className="text-xs italic">Elegant border with enhanced shadows</p>
+              </button>
+
+              {/* Frame Style Options - show when frame is selected */}
+              {overlayStyle === 'frame' && (
+                <div className="pl-4 pt-2 space-y-2 border-l-2 border-whisper-plum/20">
+                  <p className="text-xs font-cormorant text-whisper-plum/60 italic mb-2">Frame Style:</p>
+                  {[
+                    { value: 'thick', label: 'Thick Border', desc: 'iPad-style wide frame' },
+                    { value: 'thin', label: 'Thin Border', desc: 'Elegant minimal frame' },
+                    { value: 'vignette', label: 'Vignette', desc: 'Soft darkened edges' },
+                    { value: 'corners', label: 'Corner Accents', desc: 'Decorative corner brackets' },
+                  ].map((frame) => (
+                    <button
+                      key={frame.value}
+                      onClick={() => setFrameStyle(frame.value as any)}
+                      className={`
+                        w-full p-2 rounded-lg border transition-all duration-150 font-cormorant text-left text-sm
+                        ${
+                          frameStyle === frame.value
+                            ? 'border-whisper-plum/30 bg-whisper-plum/5 text-whisper-inkBlack'
+                            : 'border-whisper-plum/10 hover:border-whisper-plum/20 text-whisper-plum/60'
+                        }
+                      `}
+                    >
+                      <p className="font-medium">{frame.label}</p>
+                      <p className="text-xs italic opacity-70">{frame.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Design Standards Note */}
+          <div className="paper-card p-6 bg-whisper-blushRose/20">
+            <h4 className="font-cormorant text-whisper-plum mb-3 text-sm tracking-wide">
+              PRINTING SPECIFICATIONS
+            </h4>
+            <ul className="text-sm font-cormorant text-whisper-inkBlack/70 space-y-2 leading-relaxed">
               <li>• A7 folded card (5×7 inches)</li>
-              <li>• 300 DPI for crisp printing</li>
-              <li>• Paper texture and natural lighting</li>
+              <li>• 300 DPI premium quality</li>
+              <li>• 0.25" safe margins maintained</li>
+              <li>• Fine art paper with subtle texture</li>
             </ul>
           </div>
         </div>
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex gap-4 justify-between mt-8">
+      <div className="flex gap-4 justify-between mt-12">
         <button
           onClick={handleBack}
-          className="px-8 py-3 rounded-full border-2 border-whisper-sage text-whisper-charcoal hover:bg-whisper-sage hover:text-white transition-all duration-300"
+          className="px-10 py-3 rounded-full border-2 border-whisper-plum/30 font-cormorant text-whisper-inkBlack hover:bg-whisper-plum/10 hover:border-whisper-plum/50 transition-all duration-150 hover-shimmer click-settle"
         >
           Back
         </button>
         <button
           onClick={handleContinue}
-          className="px-10 py-3 rounded-full font-medium bg-whisper-sage text-white hover:bg-whisper-gold hover:scale-105 shadow-lg transition-all duration-300"
+          className="px-12 py-4 rounded-full font-cormorant text-lg transition-all duration-150 bg-whisper-plum text-whisper-parchment hover-shimmer click-settle shadow-paper-lg glow-soft"
         >
           Continue to Checkout
         </button>

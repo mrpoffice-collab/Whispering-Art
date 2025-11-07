@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  /* Whispering Art Brand Colors */
-  --whisper-cream: #FAF7F2;
-  --whisper-sage: #C9D5C5;
-  --whisper-blush: #F2D5D7;
-  --whisper-gold: #D4AF7A;
-  --whisper-charcoal: #4A4A4A;
-  --whisper-soft-white: #FFFFFF;
+  /* Whispering Art Ink Tones - NO GREY */
+  --ink-black: #0D0B0B;
+  --antique-plum: #5B3E43;
+  --soft-parchment: #F9F4EE;
+  --blush-rose: #EAD8CF;
+  --muted-sage: #C7C8B8;
+  --warm-white: #FEFCF9;
 
-  --background: var(--whisper-cream);
-  --foreground: var(--whisper-charcoal);
+  --background: var(--soft-parchment);
+  --foreground: var(--ink-black);
 }
 
 @theme inline {
@@ -22,39 +22,549 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-lora), serif;
-  font-size: 16px;
-  line-height: 1.6;
+  font-family: var(--font-lora), 'Cormorant Garamond', serif;
+  font-size: 17px;
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Enhanced paper quality feel */
+  position: relative;
 }
 
-/* Elegant transitions */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  /* Handmade paper texture with organic imperfections */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='paper-texture'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5' seed='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper-texture)' opacity='0.035'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+
+/* Gentle transitions (under 200ms) */
 * {
-  transition: all 0.2s ease;
+  transition: opacity 150ms ease, transform 150ms ease;
 }
 
-/* Paper texture effect */
+/* Rich watercolor background - visible and artistic */
 .paper-bg {
-  background-color: var(--whisper-cream);
-  background-image:
-    linear-gradient(45deg, transparent 48%, rgba(74, 74, 74, 0.02) 50%, transparent 52%),
-    linear-gradient(-45deg, transparent 48%, rgba(74, 74, 74, 0.02) 50%, transparent 52%);
-  background-size: 3px 3px;
+  position: relative;
+  background:
+    /* BOLD watercolor wash - top right corner (blush rose) */
+    radial-gradient(
+      ellipse 1600px 1200px at 95% 0%,
+      rgba(234, 216, 207, 0.75) 0%,
+      rgba(234, 216, 207, 0.55) 20%,
+      rgba(234, 216, 207, 0.35) 40%,
+      rgba(234, 216, 207, 0.15) 60%,
+      transparent 80%
+    ),
+
+    /* BOLD sage watercolor - bottom left corner */
+    radial-gradient(
+      ellipse 1800px 1400px at 0% 100%,
+      rgba(199, 200, 184, 0.7) 0%,
+      rgba(199, 200, 184, 0.5) 25%,
+      rgba(199, 200, 184, 0.3) 45%,
+      rgba(199, 200, 184, 0.15) 65%,
+      transparent 85%
+    ),
+
+    /* Deep plum ink wash - center spreading */
+    radial-gradient(
+      circle 2000px at 50% 50%,
+      transparent 0%,
+      rgba(91, 62, 67, 0.12) 30%,
+      rgba(91, 62, 67, 0.25) 50%,
+      rgba(91, 62, 67, 0.15) 70%,
+      transparent 100%
+    ),
+
+    /* Rich tea stain - top left */
+    radial-gradient(
+      circle 900px at 5% 5%,
+      rgba(234, 216, 207, 0.6) 0%,
+      rgba(234, 216, 207, 0.4) 30%,
+      rgba(234, 216, 207, 0.2) 55%,
+      transparent 75%
+    ),
+
+    /* Visible ink droplets scattered across page */
+    radial-gradient(
+      circle 350px at 78% 60%,
+      rgba(91, 62, 67, 0.25) 0%,
+      rgba(91, 62, 67, 0.15) 35%,
+      transparent 70%
+    ),
+    radial-gradient(
+      circle 400px at 20% 75%,
+      rgba(199, 200, 184, 0.3) 0%,
+      rgba(199, 200, 184, 0.15) 40%,
+      transparent 70%
+    ),
+    radial-gradient(
+      circle 280px at 85% 25%,
+      rgba(234, 216, 207, 0.35) 0%,
+      rgba(234, 216, 207, 0.2) 40%,
+      transparent 65%
+    ),
+    radial-gradient(
+      circle 320px at 15% 30%,
+      rgba(91, 62, 67, 0.2) 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      circle 250px at 92% 88%,
+      rgba(199, 200, 184, 0.35) 0%,
+      transparent 70%
+    ),
+
+    /* Rich parchment base with color variation */
+    linear-gradient(
+      135deg,
+      #EAD8CF 0%,
+      #F9F4EE 25%,
+      #FEFCF9 50%,
+      #F9F4EE 75%,
+      #EAD8CF 100%
+    );
 }
 
-/* Custom scrollbar */
+/* Watercolor edge bleed effect */
+.watercolor-edge {
+  position: relative;
+}
+
+.watercolor-edge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at top,
+    rgba(234, 216, 207, 0.3) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+/* Premium card appearance - feels like resting on desk */
+.paper-card {
+  background: linear-gradient(
+    135deg,
+    rgba(254, 252, 249, 0.95) 0%,
+    rgba(249, 244, 238, 0.98) 100%
+  );
+  box-shadow:
+    /* Paper cast shadow */
+    0 1px 3px rgba(13, 11, 11, 0.05),
+    0 4px 12px rgba(13, 11, 11, 0.08),
+    /* Subtle inner highlight (paper texture) */
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(249, 244, 238, 0.8);
+}
+
+/* Watermark whisper (barely visible) */
+.watermark-whisper {
+  position: relative;
+}
+
+.watermark-whisper::before {
+  content: 'Whispering Art';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  font-family: var(--font-great-vibes), cursive;
+  font-size: 6rem;
+  color: rgba(13, 11, 11, 0.01);
+  pointer-events: none;
+  z-index: 0;
+  white-space: nowrap;
+  letter-spacing: 0.1em;
+}
+
+/* Soft luminous glow */
+.glow-soft {
+  box-shadow: 0 0 20px rgba(234, 216, 207, 0.4);
+}
+
+/* Custom scrollbar (warm ink tones) */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--whisper-cream);
+  background: var(--soft-parchment);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--whisper-sage);
-  border-radius: 4px;
+  background: rgba(91, 62, 67, 0.3);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--whisper-gold);
+  background: rgba(91, 62, 67, 0.5);
+}
+
+/* Remove all grey - replace with translucent ink */
+.text-gray-500, .text-gray-600, .text-gray-700 {
+  color: rgba(13, 11, 11, 0.6) !important;
+}
+
+.bg-gray-100 {
+  background-color: rgba(249, 244, 238, 0.5) !important;
+}
+
+/* Hover shimmer effect */
+.hover-shimmer {
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.hover-shimmer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(13, 11, 11, 0.1);
+}
+
+/* Click settle effect */
+.click-settle:active {
+  transform: scale(0.98);
+  transition: transform 100ms ease;
+}
+
+/* Floating whispers - petals/brushstrokes representing art & sentiment */
+.whisper-petals {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.whisper-petal {
+  position: absolute;
+  border-radius: 50% 0 50% 0;
+  opacity: 0.4;
+  filter: blur(0.5px);
+}
+
+/* Individual petal styles - varied sizes, colors, timings */
+.petal-1 {
+  width: 45px;
+  height: 60px;
+  background: radial-gradient(ellipse at 30% 30%, rgba(234, 216, 207, 0.75) 0%, rgba(234, 216, 207, 0.35) 100%);
+  left: 8%;
+  top: -5%;
+  animation: float-whisper-1 28s ease-in-out infinite;
+}
+
+.petal-2 {
+  width: 38px;
+  height: 52px;
+  background: radial-gradient(ellipse at 40% 40%, rgba(199, 200, 184, 0.7) 0%, rgba(199, 200, 184, 0.3) 100%);
+  left: 72%;
+  top: -8%;
+  animation: float-whisper-2 31s ease-in-out infinite 4s;
+}
+
+.petal-3 {
+  width: 52px;
+  height: 68px;
+  background: radial-gradient(ellipse at 35% 35%, rgba(91, 62, 67, 0.65) 0%, rgba(91, 62, 67, 0.3) 100%);
+  left: 43%;
+  top: -12%;
+  animation: float-whisper-3 35s ease-in-out infinite 9s;
+}
+
+.petal-4 {
+  width: 42px;
+  height: 58px;
+  background: radial-gradient(ellipse at 30% 30%, rgba(254, 252, 249, 0.8) 0%, rgba(234, 216, 207, 0.4) 100%);
+  left: 88%;
+  top: -6%;
+  animation: float-whisper-4 27s ease-in-out infinite 13s;
+}
+
+.petal-5 {
+  width: 35px;
+  height: 48px;
+  background: radial-gradient(ellipse at 40% 40%, rgba(199, 200, 184, 0.8) 0%, rgba(199, 200, 184, 0.4) 100%);
+  left: 18%;
+  top: -10%;
+  animation: float-whisper-5 33s ease-in-out infinite 18s;
+}
+
+.petal-6 {
+  width: 48px;
+  height: 64px;
+  background: radial-gradient(ellipse at 35% 35%, rgba(91, 62, 67, 0.7) 0%, rgba(91, 62, 67, 0.32) 100%);
+  left: 58%;
+  top: -15%;
+  animation: float-whisper-6 29s ease-in-out infinite 7s;
+}
+
+.petal-7 {
+  width: 40px;
+  height: 55px;
+  background: radial-gradient(ellipse at 32% 32%, rgba(234, 216, 207, 0.72) 0%, rgba(249, 244, 238, 0.35) 100%);
+  left: 28%;
+  top: -7%;
+  animation: float-whisper-7 32s ease-in-out infinite 21s;
+}
+
+.petal-8 {
+  width: 50px;
+  height: 66px;
+  background: radial-gradient(ellipse at 38% 38%, rgba(199, 200, 184, 0.68) 0%, rgba(199, 200, 184, 0.28) 100%);
+  left: 93%;
+  top: -11%;
+  animation: float-whisper-8 26s ease-in-out infinite 2s;
+}
+
+.petal-9 {
+  width: 36px;
+  height: 50px;
+  background: radial-gradient(ellipse at 33% 33%, rgba(91, 62, 67, 0.75) 0%, rgba(91, 62, 67, 0.33) 100%);
+  left: 63%;
+  top: -9%;
+  animation: float-whisper-9 34s ease-in-out infinite 15s;
+}
+
+.petal-10 {
+  width: 44px;
+  height: 60px;
+  background: radial-gradient(ellipse at 36% 36%, rgba(254, 252, 249, 0.85) 0%, rgba(234, 216, 207, 0.38) 100%);
+  left: 38%;
+  top: -13%;
+  animation: float-whisper-10 30s ease-in-out infinite 11s;
+}
+
+/* Wind-blown squiggly animations - like petals dancing in the breeze */
+@keyframes float-whisper-1 {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  8% { opacity: 0.5; }
+  20% { transform: translate(-22px, 22vh) rotate(45deg); }
+  40% { transform: translate(18px, 45vh) rotate(110deg); }
+  55% { transform: translate(-28px, 65vh) rotate(175deg); }
+  70% { transform: translate(15px, 82vh) rotate(235deg); }
+  85% { transform: translate(-20px, 96vh) rotate(295deg); }
+  92% { opacity: 0.5; }
+  100% { transform: translate(12px, 110vh) rotate(350deg); opacity: 0; }
+}
+
+@keyframes float-whisper-2 {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  7% { opacity: 0.6; }
+  18% { transform: translate(25px, 20vh) rotate(-40deg); }
+  38% { transform: translate(-20px, 43vh) rotate(-100deg); }
+  52% { transform: translate(32px, 63vh) rotate(-160deg); }
+  68% { transform: translate(-18px, 80vh) rotate(-215deg); }
+  83% { transform: translate(24px, 95vh) rotate(-275deg); }
+  93% { opacity: 0.6; }
+  100% { transform: translate(-15px, 110vh) rotate(-330deg); opacity: 0; }
+}
+
+@keyframes float-whisper-3 {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  9% { opacity: 0.45; }
+  22% { transform: translate(-30px, 24vh) rotate(50deg); }
+  42% { transform: translate(22px, 48vh) rotate(115deg); }
+  58% { transform: translate(-26px, 68vh) rotate(180deg); }
+  72% { transform: translate(28px, 84vh) rotate(240deg); }
+  87% { transform: translate(-24px, 98vh) rotate(305deg); }
+  91% { opacity: 0.45; }
+  100% { transform: translate(18px, 110vh) rotate(360deg); opacity: 0; }
+}
+
+@keyframes float-whisper-4 {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.55; }
+  19% { transform: translate(28px, 21vh) rotate(-48deg); }
+  36% { transform: translate(-24px, 41vh) rotate(-108deg); }
+  54% { transform: translate(35px, 61vh) rotate(-170deg); }
+  69% { transform: translate(-22px, 79vh) rotate(-228deg); }
+  84% { transform: translate(26px, 94vh) rotate(-288deg); }
+  90% { opacity: 0.55; }
+  100% { transform: translate(-20px, 110vh) rotate(-345deg); opacity: 0; }
+}
+
+@keyframes float-whisper-5 {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  6% { opacity: 0.6; }
+  21% { transform: translate(-26px, 23vh) rotate(42deg); }
+  39% { transform: translate(30px, 44vh) rotate(105deg); }
+  56% { transform: translate(-34px, 64vh) rotate(168deg); }
+  71% { transform: translate(24px, 81vh) rotate(230deg); }
+  86% { transform: translate(-28px, 97vh) rotate(292deg); }
+  94% { opacity: 0.6; }
+  100% { transform: translate(22px, 110vh) rotate(348deg); opacity: 0; }
+}
+
+@keyframes float-whisper-6 {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  8% { opacity: 0.5; }
+  17% { transform: translate(32px, 19vh) rotate(-42deg); }
+  37% { transform: translate(-28px, 42vh) rotate(-102deg); }
+  53% { transform: translate(26px, 62vh) rotate(-164deg); }
+  67% { transform: translate(-30px, 78vh) rotate(-222deg); }
+  82% { transform: translate(34px, 93vh) rotate(-282deg); }
+  92% { opacity: 0.5; }
+  100% { transform: translate(-26px, 110vh) rotate(-338deg); opacity: 0; }
+}
+
+@keyframes float-whisper-7 {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  9% { opacity: 0.52; }
+  23% { transform: translate(-24px, 25vh) rotate(52deg); }
+  41% { transform: translate(28px, 46vh) rotate(118deg); }
+  57% { transform: translate(-32px, 66vh) rotate(182deg); }
+  73% { transform: translate(20px, 83vh) rotate(245deg); }
+  88% { transform: translate(-26px, 99vh) rotate(308deg); }
+  91% { opacity: 0.52; }
+  100% { transform: translate(24px, 110vh) rotate(365deg); opacity: 0; }
+}
+
+@keyframes float-whisper-8 {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  7% { opacity: 0.58; }
+  16% { transform: translate(30px, 18vh) rotate(-38deg); }
+  34% { transform: translate(-26px, 39vh) rotate(-98deg); }
+  51% { transform: translate(28px, 59vh) rotate(-158deg); }
+  66% { transform: translate(-32px, 76vh) rotate(-218deg); }
+  81% { transform: translate(24px, 92vh) rotate(-278deg); }
+  93% { opacity: 0.58; }
+  100% { transform: translate(-28px, 110vh) rotate(-335deg); opacity: 0; }
+}
+
+@keyframes float-whisper-9 {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.48; }
+  24% { transform: translate(-28px, 26vh) rotate(55deg); }
+  43% { transform: translate(24px, 49vh) rotate(120deg); }
+  59% { transform: translate(-30px, 69vh) rotate(185deg); }
+  74% { transform: translate(26px, 85vh) rotate(248deg); }
+  89% { transform: translate(-22px, 100vh) rotate(312deg); }
+  90% { opacity: 0.48; }
+  100% { transform: translate(20px, 110vh) rotate(370deg); opacity: 0; }
+}
+
+@keyframes float-whisper-10 {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  8% { opacity: 0.54; }
+  15% { transform: translate(34px, 17vh) rotate(-35deg); }
+  33% { transform: translate(-30px, 38vh) rotate(-95deg); }
+  50% { transform: translate(26px, 58vh) rotate(-155deg); }
+  65% { transform: translate(-28px, 75vh) rotate(-215deg); }
+  80% { transform: translate(32px, 91vh) rotate(-275deg); }
+  92% { opacity: 0.54; }
+  100% { transform: translate(-24px, 110vh) rotate(-332deg); opacity: 0; }
+}
+
+.petal-11 {
+  width: 41px;
+  height: 56px;
+  background: radial-gradient(ellipse at 34% 34%, rgba(234, 216, 207, 0.78) 0%, rgba(234, 216, 207, 0.36) 100%);
+  left: 12%;
+  top: -14%;
+  animation: float-whisper-11 29s ease-in-out infinite 5s;
+}
+
+.petal-12 {
+  width: 47px;
+  height: 62px;
+  background: radial-gradient(ellipse at 37% 37%, rgba(199, 200, 184, 0.74) 0%, rgba(199, 200, 184, 0.32) 100%);
+  left: 82%;
+  top: -9%;
+  animation: float-whisper-12 33s ease-in-out infinite 16s;
+}
+
+.petal-13 {
+  width: 39px;
+  height: 54px;
+  background: radial-gradient(ellipse at 31% 31%, rgba(91, 62, 67, 0.7) 0%, rgba(91, 62, 67, 0.31) 100%);
+  left: 48%;
+  top: -11%;
+  animation: float-whisper-13 31s ease-in-out infinite 22s;
+}
+
+.petal-14 {
+  width: 43px;
+  height: 59px;
+  background: radial-gradient(ellipse at 35% 35%, rgba(254, 252, 249, 0.82) 0%, rgba(249, 244, 238, 0.37) 100%);
+  left: 68%;
+  top: -16%;
+  animation: float-whisper-14 28s ease-in-out infinite 8s;
+}
+
+.petal-15 {
+  width: 37px;
+  height: 51px;
+  background: radial-gradient(ellipse at 33% 33%, rgba(199, 200, 184, 0.76) 0%, rgba(199, 200, 184, 0.34) 100%);
+  left: 33%;
+  top: -7%;
+  animation: float-whisper-15 34s ease-in-out infinite 19s;
+}
+
+@keyframes float-whisper-11 {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  5% { opacity: 0.5; }
+  15% { transform: translate(20px, 15vh) rotate(30deg); }
+  30% { transform: translate(-15px, 35vh) rotate(80deg); }
+  45% { transform: translate(30px, 55vh) rotate(140deg); }
+  60% { transform: translate(-10px, 70vh) rotate(190deg); }
+  75% { transform: translate(25px, 88vh) rotate(250deg); }
+  95% { opacity: 0.5; }
+  100% { transform: translate(-20px, 110vh) rotate(310deg); opacity: 0; }
+}
+
+@keyframes float-whisper-12 {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  6% { opacity: 0.53; }
+  18% { transform: translate(-25px, 18vh) rotate(-35deg); }
+  32% { transform: translate(18px, 38vh) rotate(-90deg); }
+  48% { transform: translate(-30px, 58vh) rotate(-150deg); }
+  62% { transform: translate(22px, 73vh) rotate(-200deg); }
+  78% { transform: translate(-18px, 90vh) rotate(-265deg); }
+  94% { opacity: 0.53; }
+  100% { transform: translate(28px, 110vh) rotate(-320deg); opacity: 0; }
+}
+
+@keyframes float-whisper-13 {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  7% { opacity: 0.49; }
+  16% { transform: translate(32px, 16vh) rotate(40deg); }
+  35% { transform: translate(-20px, 40vh) rotate(95deg); }
+  50% { transform: translate(28px, 60vh) rotate(160deg); }
+  65% { transform: translate(-25px, 75vh) rotate(210deg); }
+  80% { transform: translate(20px, 92vh) rotate(275deg); }
+  93% { opacity: 0.49; }
+  100% { transform: translate(-35px, 110vh) rotate(335deg); opacity: 0; }
+}
+
+@keyframes float-whisper-14 {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  8% { opacity: 0.56; }
+  20% { transform: translate(-28px, 20vh) rotate(-45deg); }
+  38% { transform: translate(24px, 42vh) rotate(-105deg); }
+  52% { transform: translate(-32px, 62vh) rotate(-165deg); }
+  68% { transform: translate(26px, 78vh) rotate(-220deg); }
+  82% { transform: translate(-22px, 94vh) rotate(-280deg); }
+  92% { opacity: 0.56; }
+  100% { transform: translate(30px, 110vh) rotate(-340deg); opacity: 0; }
+}
+
+@keyframes float-whisper-15 {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  6% { opacity: 0.51; }
+  17% { transform: translate(26px, 17vh) rotate(38deg); }
+  33% { transform: translate(-22px, 37vh) rotate(88deg); }
+  49% { transform: translate(34px, 57vh) rotate(145deg); }
+  64% { transform: translate(-28px, 72vh) rotate(198deg); }
+  79% { transform: translate(24px, 89vh) rotate(260deg); }
+  94% { opacity: 0.51; }
+  100% { transform: translate(-30px, 110vh) rotate(315deg); opacity: 0; }
 }

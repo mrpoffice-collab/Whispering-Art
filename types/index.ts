@@ -17,7 +17,8 @@ export type CardMood =
   | 'reflective'
   | 'warm'
   | 'peaceful'
-  | 'joyful';
+  | 'joyful'
+  | 'lighthearted';
 
 export type ArtStyle =
   | 'floral-line-art'
@@ -30,8 +31,10 @@ export type ArtStyle =
 
 export interface CardIntent {
   occasion: CardOccasion;
+  specificOccasion?: string; // Optional specific occasion like "Christmas", "Wedding", etc.
   mood: CardMood;
   style: ArtStyle;
+  senderName: string;
 }
 
 export interface CardImage {
@@ -56,11 +59,14 @@ export interface CardDesign {
   image: CardImage;
   text: CardText;
   layout: {
-    fontFamily: 'lora' | 'playfair';
+    fontFamily: 'cormorant' | 'libreBaskerville';
     captionSize: string;
     proseSize: string;
-    signatureFont: 'greatVibes' | 'allura';
+    signatureFont: 'greatVibes' | 'allura' | 'alexBrush' | 'pinyonScript' | 'sacramento' | 'dancingScript';
     alignment: 'left' | 'center' | 'right';
+    textPosition: 'bottom' | 'top' | 'center';
+    overlayStyle: 'gradient' | 'scrim' | 'frame' | 'none';
+    frameStyle: 'thick' | 'thin' | 'vignette' | 'corners';
   };
   createdAt: Date;
   updatedAt: Date;

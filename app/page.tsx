@@ -11,42 +11,59 @@ export default function Home() {
   const step = useCardStore((state) => state.step);
 
   return (
-    <main className="min-h-screen paper-bg">
-      {/* Header */}
-      <header className="border-b border-whisper-sage/30 bg-whisper-softWhite/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 py-6">
-          <h1 className="text-3xl font-playfair text-whisper-charcoal">
+    <main className="min-h-screen paper-bg relative">
+      {/* Floating artistic whispers - petals, brushstrokes, sentiment symbols */}
+      <div className="whisper-petals">
+        <div className="whisper-petal petal-1"></div>
+        <div className="whisper-petal petal-2"></div>
+        <div className="whisper-petal petal-3"></div>
+        <div className="whisper-petal petal-4"></div>
+        <div className="whisper-petal petal-5"></div>
+        <div className="whisper-petal petal-6"></div>
+        <div className="whisper-petal petal-7"></div>
+        <div className="whisper-petal petal-8"></div>
+        <div className="whisper-petal petal-9"></div>
+        <div className="whisper-petal petal-10"></div>
+        <div className="whisper-petal petal-11"></div>
+        <div className="whisper-petal petal-12"></div>
+        <div className="whisper-petal petal-13"></div>
+        <div className="whisper-petal petal-14"></div>
+        <div className="whisper-petal petal-15"></div>
+      </div>
+
+      {/* Signature Header - flowing script */}
+      <header className="backdrop-blur-sm sticky top-0 z-50 border-b border-whisper-plum/10">
+        <div className="max-w-6xl mx-auto px-8 py-6">
+          <h1 className="text-6xl font-greatVibes text-whisper-inkBlack text-center tracking-wide">
             Whispering Art
           </h1>
-          <p className="text-whisper-charcoal/70 mt-1 font-light">
-            Where words and art whisper together
+          <p className="text-center text-whisper-plum/70 mt-1 font-cormorant italic text-xs tracking-widest">
+            Where every image finds its voice
           </p>
         </div>
       </header>
 
-      {/* Progress Indicator */}
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-12">
+      {/* Soft progress dots (no boxes) */}
+      <div className="max-w-5xl mx-auto px-8 py-4">
+        <div className="flex items-center justify-center gap-3 mb-8">
           {[1, 2, 3, 4, 5].map((num) => (
-            <div key={num} className="flex items-center flex-1">
+            <div key={num} className="flex items-center">
               <div
                 className={`
-                  w-10 h-10 rounded-full flex items-center justify-center
-                  font-medium transition-all duration-300
+                  w-3 h-3 rounded-full transition-all duration-200
                   ${
                     step >= num
-                      ? 'bg-whisper-sage text-white'
-                      : 'bg-whisper-cream border-2 border-whisper-sage/30 text-whisper-charcoal/40'
+                      ? 'bg-whisper-plum shadow-paper'
+                      : 'bg-whisper-sage/30'
                   }
+                  ${step === num ? 'scale-125 shadow-paper-lg' : ''}
                 `}
-              >
-                {num}
-              </div>
+              />
               {num < 5 && (
                 <div
                   className={`
-                    flex-1 h-1 mx-2 transition-all duration-300
-                    ${step > num ? 'bg-whisper-sage' : 'bg-whisper-sage/20'}
+                    w-16 h-px mx-1 transition-all duration-200
+                    ${step > num ? 'bg-whisper-plum/40' : 'bg-whisper-sage/20'}
                   `}
                 />
               )}
@@ -54,8 +71,8 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Step Content */}
-        <div className="animate-fold">
+        {/* Step Content - fade in/out like turning pages */}
+        <div className="animate-fade-in">
           {step === 1 && <IntentSelection />}
           {step === 2 && <ImageSelection />}
           {step === 3 && <TextGeneration />}

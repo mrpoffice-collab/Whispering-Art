@@ -9,6 +9,8 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'paid' | 'printed' | 'mailed'>('all');
+  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
+  const [batchProcessing, setBatchProcessing] = useState(false);
 
   useEffect(() => {
     // Check if already authenticated
@@ -70,7 +72,11 @@ export default function AdminDashboard() {
       const response = await fetch('/api/generate-pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cardDesign: order.cardDesign }),
+        body: JSON.stringify({
+          cardDesign: order.cardDesign,
+          orderId: order.id,
+          recipient: order.recipient
+        }),
       });
 
       const data = await response.json();
@@ -80,6 +86,121 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('Failed to generate PDF:', error);
     }
+  };
+
+  const handleBatchDownloadCards = async () => {
+    if (selectedOrders.size === 0) {
+      alert('Please select orders to download');
+      return;
+    }
+
+    setBatchProcessing(true);
+    try {
+      const response = await fetch('/api/admin/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'downloadCards',
+          orderIds: Array.from(selectedOrders),
+        }),
+      });
+
+      const data = await response.json();
+
+      // Open each PDF in a new tab
+      for (const pdf of data.pdfs) {
+        window.open(pdf.url, '_blank');
+        await new Promise(resolve => setTimeout(resolve, 500)); // Delay to avoid popup blocker
+      }
+
+      alert(`Downloaded ${data.pdfs.length} card PDFs`);
+    } catch (error) {
+      console.error('Failed to batch download cards:', error);
+      alert('Failed to download cards');
+    } finally {
+      setBatchProcessing(false);
+    }
+  };
+
+  const handleBatchDownloadEnvelopes = async () => {
+    if (selectedOrders.size === 0) {
+      alert('Please select orders to download');
+      return;
+    }
+
+    setBatchProcessing(true);
+    try {
+      const response = await fetch('/api/admin/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'downloadEnvelopes',
+          orderIds: Array.from(selectedOrders),
+        }),
+      });
+
+      const data = await response.json();
+
+      // Open each PDF in a new tab
+      for (const pdf of data.pdfs) {
+        window.open(pdf.url, '_blank');
+        await new Promise(resolve => setTimeout(resolve, 500)); // Delay to avoid popup blocker
+      }
+
+      alert(`Downloaded ${data.pdfs.length} envelope PDFs`);
+    } catch (error) {
+      console.error('Failed to batch download envelopes:', error);
+      alert('Failed to download envelopes');
+    } finally {
+      setBatchProcessing(false);
+    }
+  };
+
+  const handleBatchUpdateStatus = async (status: 'printed' | 'mailed') => {
+    if (selectedOrders.size === 0) {
+      alert('Please select orders to update');
+      return;
+    }
+
+    setBatchProcessing(true);
+    try {
+      await fetch('/api/admin/orders', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderIds: Array.from(selectedOrders),
+          status,
+        }),
+      });
+
+      alert(`Updated ${selectedOrders.size} orders to ${status}`);
+      setSelectedOrders(new Set());
+      fetchOrders();
+    } catch (error) {
+      console.error('Failed to batch update:', error);
+      alert('Failed to update orders');
+    } finally {
+      setBatchProcessing(false);
+    }
+  };
+
+  const toggleOrderSelection = (orderId: string) => {
+    const newSelected = new Set(selectedOrders);
+    if (newSelected.has(orderId)) {
+      newSelected.delete(orderId);
+    } else {
+      newSelected.add(orderId);
+    }
+    setSelectedOrders(newSelected);
+  };
+
+  const selectAllFiltered = () => {
+    const filtered = filteredOrders.map(o => o.id);
+    setSelectedOrders(new Set(filtered));
+  };
+
+  const deselectAll = () => {
+    setSelectedOrders(new Set());
   };
 
   if (!isAuthenticated) {
@@ -158,6 +279,62 @@ export default function AdminDashboard() {
           ))}
         </div>
 
+        {/* Batch Actions Bar */}
+        {filteredOrders.length > 0 && (
+          <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={selectAllFiltered}
+                  className="text-sm px-3 py-1 border border-whisper-sage/30 rounded hover:bg-whisper-sage/10"
+                >
+                  Select All ({filteredOrders.length})
+                </button>
+                <button
+                  onClick={deselectAll}
+                  className="text-sm px-3 py-1 border border-whisper-sage/30 rounded hover:bg-whisper-sage/10"
+                >
+                  Deselect All
+                </button>
+                <span className="text-sm text-whisper-charcoal/60">
+                  {selectedOrders.size} selected
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={handleBatchDownloadCards}
+                  disabled={selectedOrders.size === 0 || batchProcessing}
+                  className="text-sm px-4 py-2 bg-whisper-plum text-white rounded-lg hover:bg-whisper-plum/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  📄 Download Cards
+                </button>
+                <button
+                  onClick={handleBatchDownloadEnvelopes}
+                  disabled={selectedOrders.size === 0 || batchProcessing}
+                  className="text-sm px-4 py-2 bg-whisper-blush text-whisper-charcoal rounded-lg hover:bg-whisper-blush/80 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ✉️ Download Envelopes
+                </button>
+                <button
+                  onClick={() => handleBatchUpdateStatus('printed')}
+                  disabled={selectedOrders.size === 0 || batchProcessing}
+                  className="text-sm px-4 py-2 bg-whisper-sage text-white rounded-lg hover:bg-whisper-gold disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ✓ Mark Printed
+                </button>
+                <button
+                  onClick={() => handleBatchUpdateStatus('mailed')}
+                  disabled={selectedOrders.size === 0 || batchProcessing}
+                  className="text-sm px-4 py-2 bg-whisper-gold text-white rounded-lg hover:bg-whisper-sage disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ✓ Mark Mailed
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Orders List */}
         {loading ? (
           <div className="text-center py-12">
@@ -170,8 +347,16 @@ export default function AdminDashboard() {
         ) : (
           <div className="space-y-4">
             {filteredOrders.map((order) => (
-              <div key={order.id} className="bg-white rounded-lg shadow-lg p-6">
-                <div className="grid md:grid-cols-3 gap-6">
+              <div key={order.id} className={`bg-white rounded-lg shadow-lg p-6 relative ${selectedOrders.has(order.id) ? 'ring-2 ring-whisper-plum' : ''}`}>
+                <div className="absolute top-4 right-4">
+                  <input
+                    type="checkbox"
+                    checked={selectedOrders.has(order.id)}
+                    onChange={() => toggleOrderSelection(order.id)}
+                    className="w-5 h-5 text-whisper-plum rounded focus:ring-whisper-plum cursor-pointer"
+                  />
+                </div>
+                <div className="grid md:grid-cols-3 gap-6 pr-12">
                   {/* Order Info */}
                   <div>
                     <h3 className="font-playfair text-lg text-whisper-charcoal mb-2">

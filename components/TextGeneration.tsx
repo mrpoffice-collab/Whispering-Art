@@ -27,17 +27,14 @@ export default function TextGeneration() {
         body: JSON.stringify({
           imageUrl: selectedImage.url,
           occasion: intent.occasion,
+          specificOccasion: intent.specificOccasion,
           mood: intent.mood,
           userGuidance,
         }),
       });
-
       const data = await response.json();
-
-      if (data.frontCaption && data.insideProse) {
-        setFrontCaption(data.frontCaption);
-        setInsideProse(data.insideProse);
-      }
+      setFrontCaption(data.frontCaption);
+      setInsideProse(data.insideProse);
     } catch (error) {
       console.error('Generation failed:', error);
       alert('Failed to generate text. Please try again.');
@@ -58,9 +55,10 @@ export default function TextGeneration() {
       const cardText: CardText = {
         frontCaption,
         insideProse,
-        signature: 'Love, Nana',
+        signature: intent.senderName,
       };
       setText(cardText);
+      setStep(4);
     }
   };
 
@@ -73,40 +71,37 @@ export default function TextGeneration() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-4xl font-playfair text-whisper-charcoal mb-3">
-          Let words whisper
+    <div className="max-w-4xl mx-auto watermark-whisper">
+      {/* Title */}
+      <div className="text-center mb-16">
+        <h2 className="text-5xl font-cormorant font-light text-whisper-inkBlack mb-4 tracking-wide">
+          Words that whisper
         </h2>
-        <p className="text-lg text-whisper-charcoal/70">
+        <p className="text-lg font-cormorant italic text-whisper-plum/70">
           AI-crafted prose to match your art
         </p>
       </div>
 
       {isGenerating && !frontCaption ? (
-        <div className="bg-white rounded-lg p-12 shadow-lg text-center">
-          <div className="animate-glow mb-4">
-            <svg
-              className="mx-auto h-12 w-12 text-whisper-sage"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
+        <div className="paper-card p-16 text-center">
+          <div className="mb-6">
+            <div className="inline-block animate-pulse">
+              <svg
+                className="h-16 w-16 text-whisper-plum/40"
+                fill="none"
+                viewBox="0 0 24 24"
                 stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
+                strokeWidth={1}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                />
+              </svg>
+            </div>
           </div>
-          <p className="text-whisper-charcoal/70">
+          <p className="font-cormorant text-xl text-whisper-inkBlack/60 italic">
             Crafting words that match your art...
           </p>
         </div>
@@ -115,83 +110,88 @@ export default function TextGeneration() {
           {/* Generated Text Display */}
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             {/* Front Caption */}
-            <div className="bg-white rounded-lg p-6 shadow-lg">
-              <h3 className="text-lg font-playfair text-whisper-charcoal mb-4">
+            <div className="paper-card p-6">
+              <h3 className="text-xl font-cormorant font-light text-whisper-inkBlack mb-4 text-center">
                 Front Caption
               </h3>
               <textarea
                 value={frontCaption}
                 onChange={(e) => setFrontCaption(e.target.value)}
-                className="w-full p-4 border-2 border-whisper-sage/30 rounded-lg focus:border-whisper-sage focus:outline-none font-playfair text-2xl text-center"
-                rows={3}
+                className="w-full p-4 border-2 border-whisper-plum/20 rounded-xl focus:border-whisper-plum/40 focus:outline-none font-cormorant text-xl text-center bg-transparent resize-none"
+                rows={4}
                 placeholder="Your front caption..."
               />
-              <p className="text-xs text-whisper-charcoal/60 mt-2">
+              <p className="text-xs font-cormorant text-whisper-plum/60 mt-3 text-center italic">
                 2-6 words, poetic or minimal
               </p>
             </div>
 
             {/* Inside Prose */}
-            <div className="bg-white rounded-lg p-6 shadow-lg">
-              <h3 className="text-lg font-playfair text-whisper-charcoal mb-4">
+            <div className="paper-card p-6">
+              <h3 className="text-xl font-cormorant font-light text-whisper-inkBlack mb-4 text-center">
                 Inside Prose
               </h3>
               <textarea
                 value={insideProse}
                 onChange={(e) => setInsideProse(e.target.value)}
-                className="w-full p-4 border-2 border-whisper-sage/30 rounded-lg focus:border-whisper-sage focus:outline-none font-lora"
-                rows={6}
+                className="w-full p-4 border-2 border-whisper-plum/20 rounded-xl focus:border-whisper-plum/40 focus:outline-none font-cormorant text-base leading-relaxed bg-transparent resize-none"
+                rows={7}
                 placeholder="Your heartfelt message..."
               />
-              <p className="text-xs text-whisper-charcoal/60 mt-2">
+              <p className="text-xs font-cormorant text-whisper-plum/60 mt-3 text-center italic">
                 1-3 sentences with warmth and sincerity
               </p>
             </div>
           </div>
 
           {/* Refinement Section */}
-          <div className="bg-whisper-cream/50 rounded-lg p-6 mb-8">
-            <h3 className="text-lg font-playfair text-whisper-charcoal mb-3">
+          <div className="paper-card p-6 mb-8">
+            <h3 className="text-2xl font-cormorant font-light text-whisper-inkBlack mb-4 text-center">
               Refine the tone
             </h3>
-            <div className="flex gap-3 mb-4">
+            <div className="flex gap-3 mb-3">
               <input
                 type="text"
                 value={userGuidance}
                 onChange={(e) => setUserGuidance(e.target.value)}
-                placeholder='e.g., "softer", "warmer", "funnier", or "faith tone"'
-                className="flex-1 px-4 py-2 border-2 border-whisper-sage/30 rounded-lg focus:border-whisper-sage focus:outline-none"
+                placeholder='e.g., "softer", "warmer", "more poetic"'
+                className="flex-1 px-4 py-3 border-2 border-whisper-plum/20 rounded-full focus:border-whisper-plum/40 focus:outline-none font-cormorant"
+                onKeyDown={(e) => e.key === 'Enter' && handleRefine()}
               />
               <button
                 onClick={handleRefine}
                 disabled={isGenerating}
-                className="px-6 py-2 bg-whisper-sage text-white rounded-lg hover:bg-whisper-gold transition-all duration-300 disabled:opacity-50"
+                className={`px-8 py-3 rounded-full font-cormorant transition-all duration-150 ${
+                  isGenerating
+                    ? 'bg-whisper-sage/20 text-whisper-plum/40 cursor-not-allowed'
+                    : 'bg-whisper-plum text-whisper-parchment hover-shimmer click-settle'
+                }`}
               >
                 {isGenerating ? 'Refining...' : 'Refine'}
               </button>
             </div>
-            <p className="text-xs text-whisper-charcoal/60">
-              Provide guidance to adjust the tone and style of the generated text
+            <p className="text-xs font-cormorant text-whisper-plum/60 text-center italic">
+              Provide guidance to adjust the tone and style
             </p>
           </div>
 
           {/* Preview Card */}
-          <div className="bg-white rounded-lg p-8 shadow-lg mb-8">
-            <h3 className="text-lg font-playfair text-whisper-charcoal mb-6 text-center">
+          <div className="paper-card p-8 mb-8">
+            <h3 className="text-2xl font-cormorant font-light text-whisper-inkBlack mb-8 text-center">
               Preview
             </h3>
-            <div className="max-w-sm mx-auto bg-whisper-cream rounded-lg p-8 shadow-md">
-              <div className="text-center mb-6">
-                <p className="font-playfair text-2xl text-whisper-charcoal leading-relaxed">
+            <div className="max-w-sm mx-auto paper-card p-8">
+              <div className="text-center mb-8">
+                <p className="font-cormorant text-2xl text-whisper-inkBlack leading-relaxed whitespace-pre-line">
                   {frontCaption || 'Your caption here'}
                 </p>
               </div>
-              <div className="border-t border-whisper-sage/30 pt-6">
-                <p className="font-lora text-whisper-charcoal leading-relaxed mb-6">
+              <div className="border-t border-whisper-plum/20 pt-6">
+                <p className="font-cormorant text-base text-whisper-inkBlack leading-relaxed mb-6">
                   {insideProse || 'Your message here'}
                 </p>
-                <p className="font-allura text-xl text-whisper-charcoal/80 text-right">
-                  Love, Nana
+                <p className="font-greatVibes text-2xl text-whisper-plum text-right whitespace-pre-line">
+                  {intent.senderName?.replace(',', ',\n')}
                 </p>
               </div>
             </div>
@@ -200,10 +200,10 @@ export default function TextGeneration() {
       )}
 
       {/* Navigation Buttons */}
-      <div className="flex gap-4 justify-between mt-8">
+      <div className="flex gap-4 justify-between mt-12">
         <button
           onClick={handleBack}
-          className="px-8 py-3 rounded-full border-2 border-whisper-sage text-whisper-charcoal hover:bg-whisper-sage hover:text-white transition-all duration-300"
+          className="px-10 py-3 rounded-full border-2 border-whisper-plum/30 font-cormorant text-whisper-inkBlack hover:bg-whisper-plum/10 hover:border-whisper-plum/50 transition-all duration-150 hover-shimmer click-settle"
         >
           Back
         </button>
@@ -211,15 +211,15 @@ export default function TextGeneration() {
           onClick={handleContinue}
           disabled={!frontCaption || !insideProse}
           className={`
-            px-10 py-3 rounded-full font-medium transition-all duration-300
+            px-12 py-4 rounded-full font-cormorant text-lg transition-all duration-150
             ${
               frontCaption && insideProse
-                ? 'bg-whisper-sage text-white hover:bg-whisper-gold hover:scale-105 shadow-lg'
-                : 'bg-whisper-sage/30 text-whisper-charcoal/40 cursor-not-allowed'
+                ? 'bg-whisper-plum text-whisper-parchment hover-shimmer click-settle shadow-paper-lg glow-soft'
+                : 'bg-whisper-sage/20 text-whisper-plum/40 cursor-not-allowed'
             }
           `}
         >
-          Continue to Design
+          Continue
         </button>
       </div>
     </div>

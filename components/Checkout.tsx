@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useCardStore } from '@/lib/store';
 import { loadStripe } from '@stripe/stripe-js';
+import PrintableCard from './PrintableCard';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -11,14 +12,15 @@ export default function Checkout() {
   const setStep = useCardStore((state) => state.setStep);
 
   const [isProcessing, setIsProcessing] = useState(false);
-  const [buyerName, setBuyerName] = useState('');
-  const [buyerEmail, setBuyerEmail] = useState('');
-  const [recipientName, setRecipientName] = useState('');
-  const [addressLine1, setAddressLine1] = useState('');
+  // Pre-filled with test data for development
+  const [buyerName, setBuyerName] = useState('Meschelle Peterson');
+  const [buyerEmail, setBuyerEmail] = useState('mrpoffice@gmail.com');
+  const [recipientName, setRecipientName] = useState('Tipper Dog');
+  const [addressLine1, setAddressLine1] = useState('3590 State Rd D');
   const [addressLine2, setAddressLine2] = useState('');
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
-  const [zipCode, setZipCode] = useState('');
+  const [city, setCity] = useState('Camdenton');
+  const [state, setState] = useState('MO');
+  const [zipCode, setZipCode] = useState('65020');
 
   if (!finalDesign) return null;
 
@@ -29,8 +31,10 @@ export default function Checkout() {
   const handleCheckout = async () => {
     setIsProcessing(true);
 
+    // BYPASS PAYMENT FOR TESTING - create order as "paid"
     try {
-      const response = await fetch('/api/create-checkout', {
+      // Create order in database
+      const orderResponse = await fetch('/api/admin/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -47,18 +51,50 @@ export default function Checkout() {
             country: 'US',
           },
           amount: TOTAL,
+          status: 'paid', // Bypass payment for testing
         }),
       });
 
-      const { sessionUrl } = await response.json();
-
-      // Redirect to Stripe checkout
-      if (sessionUrl) {
-        window.location.href = sessionUrl;
+      if (!orderResponse.ok) {
+        throw new Error('Failed to create order');
       }
+
+      const { order } = await orderResponse.json();
+
+      // Show success message
+      alert(`✅ Order created successfully!\n\nOrder ID: ${order.id.slice(-8)}\n\nYour card will be printed and mailed within 1-2 business days.`);
+
+      // Reset to step 1 for next order
+      setStep(1);
+
+      // TODO: When ready for production, add Stripe checkout:
+      // const checkoutResponse = await fetch('/api/create-checkout', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({
+      //     cardDesign: finalDesign,
+      //     buyerName,
+      //     buyerEmail,
+      //     recipient: {
+      //       name: recipientName,
+      //       addressLine1,
+      //       addressLine2,
+      //       city,
+      //       state,
+      //       zipCode,
+      //       country: 'US',
+      //     },
+      //     amount: TOTAL,
+      //   }),
+      // });
+      // const { sessionUrl } = await checkoutResponse.json();
+      // if (sessionUrl) {
+      //   window.location.href = sessionUrl;
+      // }
+
     } catch (error) {
-      console.error('Checkout error:', error);
-      alert('Failed to process checkout. Please try again.');
+      console.error('Order creation error:', error);
+      alert('Failed to create order. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -78,13 +114,21 @@ export default function Checkout() {
     zipCode;
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-4xl font-playfair text-whisper-charcoal mb-3">
+    <>
+      {/* Hidden print-only card layout */}
+      <PrintableCard design={finalDesign} />
+
+      {/* Screen-only checkout UI */}
+      <div className="max-w-4xl mx-auto watermark-whisper no-print">
+        <div className="text-center mb-12">
+        <h2 className="text-5xl font-cormorant font-light text-whisper-inkBlack mb-4 tracking-wide">
           Send this card
         </h2>
-        <p className="text-lg text-whisper-charcoal/70">
+        <p className="text-lg font-cormorant italic text-whisper-plum/70">
           $3 + postage • Printed and mailed within 1-2 days
+        </p>
+        <p className="text-sm font-cormorant text-whisper-plum/50 mt-2">
+          🧪 Testing Mode: Payment bypassed for development
         </p>
       </div>
 
@@ -92,8 +136,8 @@ export default function Checkout() {
         {/* Form Section */}
         <div>
           {/* Buyer Information */}
-          <div className="bg-white rounded-lg p-6 shadow-lg mb-6">
-            <h3 className="text-xl font-playfair text-whisper-charcoal mb-4">
+          <div className="paper-card p-6 mb-6">
+            <h3 className="text-xl font-cormorant font-light text-whisper-inkBlack mb-4">
               Your Information
             </h3>
             <div className="space-y-4">
@@ -105,7 +149,7 @@ export default function Checkout() {
                   type="text"
                   value={buyerName}
                   onChange={(e) => setBuyerName(e.target.value)}
-                  className="w-full px-4 py-2 border-2 border-whisper-sage/30 rounded-lg focus:border-whisper-sage focus:outline-none"
+                  className="w-full px-4 py-3 border-2 border-whisper-plum/20 rounded-xl focus:border-whisper-plum/40 focus:outline-none font-cormorant bg-transparent transition-all duration-150"
                   placeholder="Jane Doe"
                 />
               </div>
@@ -117,7 +161,7 @@ export default function Checkout() {
                   type="email"
                   value={buyerEmail}
                   onChange={(e) => setBuyerEmail(e.target.value)}
-                  className="w-full px-4 py-2 border-2 border-whisper-sage/30 rounded-lg focus:border-whisper-sage focus:outline-none"
+                  className="w-full px-4 py-3 border-2 border-whisper-plum/20 rounded-xl focus:border-whisper-plum/40 focus:outline-none font-cormorant bg-transparent transition-all duration-150"
                   placeholder="jane@example.com"
                 />
               </div>
@@ -125,8 +169,8 @@ export default function Checkout() {
           </div>
 
           {/* Recipient Information */}
-          <div className="bg-white rounded-lg p-6 shadow-lg">
-            <h3 className="text-xl font-playfair text-whisper-charcoal mb-4">
+          <div className="paper-card p-6">
+            <h3 className="text-xl font-cormorant font-light text-whisper-inkBlack mb-4">
               Recipient Address
             </h3>
             <div className="space-y-4">
@@ -138,7 +182,7 @@ export default function Checkout() {
                   type="text"
                   value={recipientName}
                   onChange={(e) => setRecipientName(e.target.value)}
-                  className="w-full px-4 py-2 border-2 border-whisper-sage/30 rounded-lg focus:border-whisper-sage focus:outline-none"
+                  className="w-full px-4 py-3 border-2 border-whisper-plum/20 rounded-xl focus:border-whisper-plum/40 focus:outline-none font-cormorant bg-transparent transition-all duration-150"
                   placeholder="John Smith"
                 />
               </div>
@@ -150,7 +194,7 @@ export default function Checkout() {
                   type="text"
                   value={addressLine1}
                   onChange={(e) => setAddressLine1(e.target.value)}
-                  className="w-full px-4 py-2 border-2 border-whisper-sage/30 rounded-lg focus:border-whisper-sage focus:outline-none"
+                  className="w-full px-4 py-3 border-2 border-whisper-plum/20 rounded-xl focus:border-whisper-plum/40 focus:outline-none font-cormorant bg-transparent transition-all duration-150"
                   placeholder="123 Main St"
                 />
               </div>
@@ -162,7 +206,7 @@ export default function Checkout() {
                   type="text"
                   value={addressLine2}
                   onChange={(e) => setAddressLine2(e.target.value)}
-                  className="w-full px-4 py-2 border-2 border-whisper-sage/30 rounded-lg focus:border-whisper-sage focus:outline-none"
+                  className="w-full px-4 py-3 border-2 border-whisper-plum/20 rounded-xl focus:border-whisper-plum/40 focus:outline-none font-cormorant bg-transparent transition-all duration-150"
                   placeholder="Apt 4B"
                 />
               </div>
@@ -175,7 +219,7 @@ export default function Checkout() {
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full px-4 py-2 border-2 border-whisper-sage/30 rounded-lg focus:border-whisper-sage focus:outline-none"
+                    className="w-full px-4 py-3 border-2 border-whisper-plum/20 rounded-xl focus:border-whisper-plum/40 focus:outline-none font-cormorant bg-transparent transition-all duration-150"
                     placeholder="New York"
                   />
                 </div>
@@ -187,7 +231,7 @@ export default function Checkout() {
                     type="text"
                     value={state}
                     onChange={(e) => setState(e.target.value)}
-                    className="w-full px-4 py-2 border-2 border-whisper-sage/30 rounded-lg focus:border-whisper-sage focus:outline-none"
+                    className="w-full px-4 py-3 border-2 border-whisper-plum/20 rounded-xl focus:border-whisper-plum/40 focus:outline-none font-cormorant bg-transparent transition-all duration-150"
                     placeholder="NY"
                     maxLength={2}
                   />
@@ -201,7 +245,7 @@ export default function Checkout() {
                   type="text"
                   value={zipCode}
                   onChange={(e) => setZipCode(e.target.value)}
-                  className="w-full px-4 py-2 border-2 border-whisper-sage/30 rounded-lg focus:border-whisper-sage focus:outline-none"
+                  className="w-full px-4 py-3 border-2 border-whisper-plum/20 rounded-xl focus:border-whisper-plum/40 focus:outline-none font-cormorant bg-transparent transition-all duration-150"
                   placeholder="10001"
                   maxLength={10}
                 />
@@ -212,8 +256,8 @@ export default function Checkout() {
 
         {/* Order Summary */}
         <div>
-          <div className="bg-white rounded-lg p-6 shadow-lg sticky top-24">
-            <h3 className="text-xl font-playfair text-whisper-charcoal mb-4">
+          <div className="paper-card p-6 sticky top-24">
+            <h3 className="text-xl font-cormorant font-light text-whisper-inkBlack mb-4">
               Order Summary
             </h3>
 
@@ -256,12 +300,12 @@ export default function Checkout() {
                 w-full py-4 rounded-lg font-medium text-lg transition-all duration-300
                 ${
                   isFormComplete && !isProcessing
-                    ? 'bg-whisper-sage text-white hover:bg-whisper-gold hover:scale-105 shadow-lg'
+                    ? 'bg-whisper-plum text-whisper-parchment hover:bg-whisper-plum/90 hover-shimmer click-settle shadow-paper-lg'
                     : 'bg-whisper-sage/30 text-whisper-charcoal/40 cursor-not-allowed'
                 }
               `}
             >
-              {isProcessing ? 'Processing...' : 'Proceed to Payment'}
+              {isProcessing ? 'Creating Order...' : '🧪 Place Order (Payment Bypassed)'}
             </button>
 
             {/* Trust Badges */}
@@ -281,11 +325,31 @@ export default function Checkout() {
       <div className="mt-8">
         <button
           onClick={handleBack}
-          className="px-8 py-3 rounded-full border-2 border-whisper-sage text-whisper-charcoal hover:bg-whisper-sage hover:text-white transition-all duration-300"
+          className="px-10 py-3 rounded-full border-2 border-whisper-plum/30 font-cormorant text-whisper-inkBlack hover:bg-whisper-plum/10 hover:border-whisper-plum/50 transition-all duration-150 hover-shimmer click-settle"
         >
           Back to Design
         </button>
       </div>
-    </div>
+      </div>
+
+      {/* Print styles */}
+      <style jsx global>{`
+        @media print {
+          .no-print {
+            display: none !important;
+          }
+
+          @page {
+            size: 5in 7in;
+            margin: 0;
+          }
+
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        }
+      `}</style>
+    </>
   );
 }
