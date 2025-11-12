@@ -1,0 +1,326 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import type { CuratedImage } from '@/types';
+import Image from 'next/image';
+
+export default function AdminImagesPage() {
+  const [images, setImages] = useState<CuratedImage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const [occasion, setOccasion] = useState('birthday');
+  const [mood, setMood] = useState('gentle');
+  const [style, setStyle] = useState('watercolor');
+  const [midjourneyPrompt, setMidjourneyPrompt] = useState('');
+  const [tags, setTags] = useState('');
+
+  useEffect(() => {
+    fetchImages();
+  }, []);
+
+  const fetchImages = async () => {
+    setIsLoading(true);
+    try {
+      const password = localStorage.getItem('adminPassword');
+      const response = await fetch('/api/admin/curated-images', {
+        headers: {
+          'x-admin-password': password || '',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setImages(data.images);
+      }
+    } catch (error) {
+      console.error('Error fetching images:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result as string);
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+  };
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const password = localStorage.getItem('adminPassword');
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('occasion', occasion);
+      formData.append('mood', mood);
+      formData.append('style', style);
+      formData.append('midjourneyPrompt', midjourneyPrompt);
+      formData.append('tags', tags);
+
+      const response = await fetch('/api/admin/curated-images', {
+        method: 'POST',
+        headers: {
+          'x-admin-password': password || '',
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert('Image uploaded successfully!');
+        setFile(null);
+        setPreview(null);
+        setMidjourneyPrompt('');
+        setTags('');
+        fetchImages();
+      } else {
+        alert('Upload failed');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Upload failed');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this image?')) return;
+
+    try {
+      const password = localStorage.getItem('adminPassword');
+      const response = await fetch(`/api/admin/curated-images?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          'x-admin-password': password || '',
+        },
+      });
+
+      if (response.ok) {
+        alert('Image deleted');
+        fetchImages();
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-whisper-parchment p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-4xl font-cormorant font-light text-whisper-inkBlack mb-2">
+            Curated Image Library
+          </h1>
+          <p className="text-whisper-plum/70 font-cormorant">
+            Upload and manage MidJourney-generated images for your card collection
+          </p>
+        </div>
+
+        {/* Upload Form */}
+        <div className="paper-card p-8 mb-8">
+          <h2 className="text-2xl font-cormorant font-light text-whisper-inkBlack mb-6">
+            Upload New Image
+          </h2>
+
+          <form onSubmit={handleUpload} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-cormorant text-whisper-plum mb-2">
+                  Occasion
+                </label>
+                <select
+                  value={occasion}
+                  onChange={(e) => setOccasion(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border border-whisper-plum/20 font-cormorant"
+                >
+                  <option value="birthday">Birthday</option>
+                  <option value="comfort">Comfort</option>
+                  <option value="gratitude">Gratitude</option>
+                  <option value="faith">Faith</option>
+                  <option value="celebration">Celebration</option>
+                  <option value="sympathy">Sympathy</option>
+                  <option value="love">Love</option>
+                  <option value="encouragement">Encouragement</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-cormorant text-whisper-plum mb-2">
+                  Mood
+                </label>
+                <select
+                  value={mood}
+                  onChange={(e) => setMood(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border border-whisper-plum/20 font-cormorant"
+                >
+                  <option value="gentle">Gentle</option>
+                  <option value="playful">Playful</option>
+                  <option value="hopeful">Hopeful</option>
+                  <option value="reflective">Reflective</option>
+                  <option value="warm">Warm</option>
+                  <option value="peaceful">Peaceful</option>
+                  <option value="joyful">Joyful</option>
+                  <option value="lighthearted">Lighthearted</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-cormorant text-whisper-plum mb-2">
+                  Art Style
+                </label>
+                <select
+                  value={style}
+                  onChange={(e) => setStyle(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border border-whisper-plum/20 font-cormorant"
+                >
+                  <option value="floral-line-art">Floral Line Art</option>
+                  <option value="watercolor">Watercolor</option>
+                  <option value="botanical">Botanical</option>
+                  <option value="boho">Boho</option>
+                  <option value="vintage">Vintage</option>
+                  <option value="minimalist">Minimalist</option>
+                  <option value="impressionist">Impressionist</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-cormorant text-whisper-plum mb-2">
+                MidJourney Prompt (Optional)
+              </label>
+              <textarea
+                value={midjourneyPrompt}
+                onChange={(e) => setMidjourneyPrompt(e.target.value)}
+                placeholder="elegant watercolor painting, soft colors..."
+                className="w-full px-4 py-2 rounded-lg border border-whisper-plum/20 font-cormorant"
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-cormorant text-whisper-plum mb-2">
+                Tags (comma separated)
+              </label>
+              <input
+                type="text"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="flowers, spring, pastel"
+                className="w-full px-4 py-2 rounded-lg border border-whisper-plum/20 font-cormorant"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-cormorant text-whisper-plum mb-2">
+                Image File
+              </label>
+              {!preview ? (
+                <label className="block border-2 border-dashed border-whisper-plum/20 rounded-lg p-8 text-center cursor-pointer hover:border-whisper-plum/40">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                  <p className="font-cormorant text-whisper-inkBlack/70">
+                    Click to upload image
+                  </p>
+                </label>
+              ) : (
+                <div className="relative">
+                  <Image
+                    src={preview}
+                    alt="Preview"
+                    width={200}
+                    height={280}
+                    className="rounded-lg mx-auto"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFile(null);
+                      setPreview(null);
+                    }}
+                    className="mt-2 text-sm font-cormorant text-whisper-plum/70 hover:text-whisper-plum block mx-auto"
+                  >
+                    Change image
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={!file || isUploading}
+              className={`
+                w-full py-3 rounded-full font-cormorant text-lg
+                ${
+                  file && !isUploading
+                    ? 'bg-whisper-plum text-whisper-parchment hover-shimmer'
+                    : 'bg-whisper-sage/20 text-whisper-plum/40 cursor-not-allowed'
+                }
+              `}
+            >
+              {isUploading ? 'Uploading...' : 'Upload Image'}
+            </button>
+          </form>
+        </div>
+
+        {/* Image Library */}
+        <div className="paper-card p-8">
+          <h2 className="text-2xl font-cormorant font-light text-whisper-inkBlack mb-6">
+            Image Library ({images.length} images)
+          </h2>
+
+          {isLoading ? (
+            <p className="text-center py-12 font-cormorant text-whisper-plum/60">
+              Loading images...
+            </p>
+          ) : images.length === 0 ? (
+            <p className="text-center py-12 font-cormorant text-whisper-inkBlack/70">
+              No images uploaded yet
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {images.map((img) => (
+                <div key={img.id} className="relative group">
+                  <div className="aspect-[5/7] relative rounded-lg overflow-hidden">
+                    <Image
+                      src={img.blobUrl}
+                      alt={`${img.occasion} ${img.mood} ${img.style}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="mt-2 text-xs font-cormorant text-whisper-inkBlack/60">
+                    <p className="capitalize">{img.occasion}</p>
+                    <p className="capitalize">{img.mood} • {img.style}</p>
+                    <p>Used {img.usageCount} times</p>
+                  </div>
+                  <button
+                    onClick={() => handleDelete(img.id)}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

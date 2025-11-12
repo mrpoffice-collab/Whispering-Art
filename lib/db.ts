@@ -38,6 +38,42 @@ export async function initDatabase() {
       CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC)
     `;
 
+    // Create curated images table
+    await sql`
+      CREATE TABLE IF NOT EXISTS curated_images (
+        id TEXT PRIMARY KEY,
+        blob_url TEXT NOT NULL,
+        thumbnail_url TEXT,
+        occasion TEXT NOT NULL,
+        mood TEXT NOT NULL,
+        style TEXT NOT NULL,
+        midjourney_prompt TEXT,
+        tags TEXT[] DEFAULT '{}',
+        is_active BOOLEAN DEFAULT true,
+        usage_count INTEGER DEFAULT 0,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `;
+
+    // Create indexes for filtering curated images
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_curated_occasion ON curated_images(occasion) WHERE is_active = true
+    `;
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_curated_mood ON curated_images(mood) WHERE is_active = true
+    `;
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_curated_style ON curated_images(style) WHERE is_active = true
+    `;
+
+    // Composite index for common query pattern
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_curated_filters ON curated_images(occasion, mood, style) WHERE is_active = true
+    `;
+
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Database initialization error:', error);

@@ -121,6 +121,21 @@ export interface ChatGPTResponse {
   reasoning?: string;
 }
 
+export interface CuratedImage {
+  id: string;
+  blobUrl: string;
+  thumbnailUrl?: string;
+  occasion: CardOccasion;
+  mood: CardMood;
+  style: ArtStyle;
+  midjourneyPrompt?: string;
+  tags?: string[];
+  isActive: boolean;
+  usageCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Store state management types
 export interface CardCreationStore {
   step: 1 | 2 | 3 | 4 | 5;

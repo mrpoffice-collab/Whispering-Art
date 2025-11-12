@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(vercel env:*)",
+      "Bash(vercel ls)",
+      "Bash(vercel link:*)",
+      "Bash(vercel ls:*)",
+      "Bash(vercel inspect:*)",
+      "Bash(vercel project:*)",
+      "Bash(findstr:*)",
+      "WebFetch(domain:whispering-art.vercel.app)",
+      "WebFetch(domain:whispering-bqov3e309-meschelles-projects.vercel.app)",
+      "Bash(echo:*)",
+      "Bash(vercel:*)",
+      "Bash(timeout /t 15 /nobreak)",
+      "WebFetch(domain:whispering-7v0l8lhr0-meschelles-projects.vercel.app)",
+      "WebFetch(domain:whispering-art-meschelles-projects.vercel.app)",
+      "Bash(curl:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)",
+      "Bash(copy:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
