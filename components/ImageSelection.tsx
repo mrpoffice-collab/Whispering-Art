@@ -114,27 +114,27 @@ export default function ImageSelection() {
     setIsUploading(true);
 
     try {
-      let blobUrl = imagePreview; // Temporary: use preview URL
+      let blobUrl = imagePreview; // Default to preview URL
 
-      // TODO: Implement after deployment
-      // if (uploadedImage) {
-      //   const formData = new FormData();
-      //   formData.append('file', uploadedImage);
-      //   const response = await fetch('/api/upload-image', {
-      //     method: 'POST',
-      //     body: formData,
-      //   });
-      //   const data = await response.json();
-      //   blobUrl = data.url;
-      // } else if (imageUrl) {
-      //   const response = await fetch('/api/upload-image', {
-      //     method: 'POST',
-      //     headers: { 'Content-Type': 'application/json' },
-      //     body: JSON.stringify({ imageUrl }),
-      //   });
-      //   const data = await response.json();
-      //   blobUrl = data.url;
-      // }
+      // Upload to Blob Storage if user uploaded a file
+      if (uploadedImage) {
+        const formData = new FormData();
+        formData.append('file', uploadedImage);
+        const response = await fetch('/api/upload-image', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Upload failed');
+        }
+
+        const data = await response.json();
+        blobUrl = data.url;
+      } else if (imageUrl) {
+        // For MidJourney URLs, use directly (already hosted)
+        blobUrl = imageUrl;
+      }
 
       const cardImage: CardImage = {
         id: crypto.randomUUID(),
