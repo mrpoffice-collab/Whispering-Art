@@ -30,25 +30,39 @@ export async function POST(request: Request) {
 
     if (imageUrl) {
       // Fetch image from URL
-      const imageResponse = await fetch(imageUrl);
-      if (!imageResponse.ok) {
+      try {
+        const imageResponse = await fetch(imageUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          },
+        });
+
+        if (!imageResponse.ok) {
+          console.error('Image fetch failed:', imageResponse.status, imageResponse.statusText);
+          return NextResponse.json(
+            { error: `Failed to fetch image: ${imageResponse.status} ${imageResponse.statusText}` },
+            { status: 400 }
+          );
+        }
+
+        const imageBuffer = await imageResponse.arrayBuffer();
+        const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+        const extension = contentType.split('/')[1] || 'jpg';
+        const filename = `midjourney-${Date.now()}.${extension}`;
+
+        // Upload to Vercel Blob
+        blob = await put(filename, imageBuffer, {
+          access: 'public',
+          contentType,
+          addRandomSuffix: true,
+        });
+      } catch (fetchError) {
+        console.error('Image fetch error:', fetchError);
         return NextResponse.json(
-          { error: 'Failed to fetch image from URL' },
+          { error: `Failed to fetch image from URL: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}` },
           { status: 400 }
         );
       }
-
-      const imageBuffer = await imageResponse.arrayBuffer();
-      const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
-      const extension = contentType.split('/')[1] || 'jpg';
-      const filename = `midjourney-${Date.now()}.${extension}`;
-
-      // Upload to Vercel Blob
-      blob = await put(filename, imageBuffer, {
-        access: 'public',
-        contentType,
-        addRandomSuffix: true,
-      });
     } else if (file) {
       // Upload file to Vercel Blob
       blob = await put(file.name, file, {
