@@ -11,25 +11,56 @@ export async function POST(request: Request) {
     }
 
     const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const file = formData.get('file') as File | null;
+    const imageUrl = formData.get('imageUrl') as string | null;
     const occasion = formData.get('occasion') as string;
     const mood = formData.get('mood') as string;
     const style = formData.get('style') as string;
     const midjourneyPrompt = formData.get('midjourneyPrompt') as string | null;
     const tags = formData.get('tags') as string | null;
 
-    if (!file || !occasion || !mood || !style) {
+    if ((!file && !imageUrl) || !occasion || !mood || !style) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields (need either file or URL)' },
         { status: 400 }
       );
     }
 
-    // Upload to Vercel Blob
-    const blob = await put(file.name, file, {
-      access: 'public',
-      addRandomSuffix: true,
-    });
+    let blob;
+
+    if (imageUrl) {
+      // Fetch image from URL
+      const imageResponse = await fetch(imageUrl);
+      if (!imageResponse.ok) {
+        return NextResponse.json(
+          { error: 'Failed to fetch image from URL' },
+          { status: 400 }
+        );
+      }
+
+      const imageBuffer = await imageResponse.arrayBuffer();
+      const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+      const extension = contentType.split('/')[1] || 'jpg';
+      const filename = `midjourney-${Date.now()}.${extension}`;
+
+      // Upload to Vercel Blob
+      blob = await put(filename, imageBuffer, {
+        access: 'public',
+        contentType,
+        addRandomSuffix: true,
+      });
+    } else if (file) {
+      // Upload file to Vercel Blob
+      blob = await put(file.name, file, {
+        access: 'public',
+        addRandomSuffix: true,
+      });
+    } else {
+      return NextResponse.json(
+        { error: 'No file or URL provided' },
+        { status: 400 }
+      );
+    }
 
     // Parse tags if provided
     const tagsArray = tags ? tags.split(',').map((t) => t.trim()) : [];

@@ -9,7 +9,9 @@ export default function AdminImagesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState('');
   const [preview, setPreview] = useState<string | null>(null);
+  const [uploadMethod, setUploadMethod] = useState<'file' | 'url'>('url');
 
   const [occasion, setOccasion] = useState('birthday');
   const [mood, setMood] = useState('gentle');
@@ -56,13 +58,19 @@ export default function AdminImagesPage() {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) return;
+    if (!file && !imageUrl) return;
 
     setIsUploading(true);
     try {
       const password = localStorage.getItem('adminPassword');
       const formData = new FormData();
-      formData.append('file', file);
+
+      if (uploadMethod === 'url' && imageUrl) {
+        formData.append('imageUrl', imageUrl);
+      } else if (file) {
+        formData.append('file', file);
+      }
+
       formData.append('occasion', occasion);
       formData.append('mood', mood);
       formData.append('style', style);
@@ -80,12 +88,14 @@ export default function AdminImagesPage() {
       if (response.ok) {
         alert('Image uploaded successfully!');
         setFile(null);
+        setImageUrl('');
         setPreview(null);
         setMidjourneyPrompt('');
         setTags('');
         fetchImages();
       } else {
-        alert('Upload failed');
+        const data = await response.json();
+        alert(`Upload failed: ${data.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Upload error:', error);
@@ -223,51 +233,128 @@ export default function AdminImagesPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-cormorant text-whisper-plum mb-2">
-                Image File
+              <label className="block text-sm font-cormorant text-whisper-plum mb-4">
+                Image Source
               </label>
-              {!preview ? (
-                <label className="block border-2 border-dashed border-whisper-plum/20 rounded-lg p-8 text-center cursor-pointer hover:border-whisper-plum/40">
+
+              {/* Upload Method Toggle */}
+              <div className="flex gap-4 mb-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUploadMethod('url');
+                    setFile(null);
+                    setPreview(null);
+                  }}
+                  className={`px-4 py-2 rounded-lg font-cormorant transition-all ${
+                    uploadMethod === 'url'
+                      ? 'bg-whisper-plum text-whisper-parchment'
+                      : 'bg-whisper-parchment border border-whisper-plum/20 text-whisper-inkBlack hover:border-whisper-plum/40'
+                  }`}
+                >
+                  MidJourney URL
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUploadMethod('file');
+                    setImageUrl('');
+                    setPreview(null);
+                  }}
+                  className={`px-4 py-2 rounded-lg font-cormorant transition-all ${
+                    uploadMethod === 'file'
+                      ? 'bg-whisper-plum text-whisper-parchment'
+                      : 'bg-whisper-parchment border border-whisper-plum/20 text-whisper-inkBlack hover:border-whisper-plum/40'
+                  }`}
+                >
+                  Upload File
+                </button>
+              </div>
+
+              {/* URL Input */}
+              {uploadMethod === 'url' && (
+                <div>
                   <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                  <p className="font-cormorant text-whisper-inkBlack/70">
-                    Click to upload image
-                  </p>
-                </label>
-              ) : (
-                <div className="relative">
-                  <Image
-                    src={preview}
-                    alt="Preview"
-                    width={200}
-                    height={280}
-                    className="rounded-lg mx-auto"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFile(null);
-                      setPreview(null);
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => {
+                      setImageUrl(e.target.value);
+                      setPreview(e.target.value || null);
                     }}
-                    className="mt-2 text-sm font-cormorant text-whisper-plum/70 hover:text-whisper-plum block mx-auto"
-                  >
-                    Change image
-                  </button>
+                    placeholder="https://cdn.midjourney.com/..."
+                    className="w-full px-4 py-3 rounded-lg border border-whisper-plum/20 font-cormorant mb-4"
+                  />
+                  {imageUrl && (
+                    <div className="relative">
+                      <Image
+                        src={imageUrl}
+                        alt="Preview"
+                        width={200}
+                        height={280}
+                        className="rounded-lg mx-auto"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImageUrl('');
+                          setPreview(null);
+                        }}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 hover:bg-red-600"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
                 </div>
+              )}
+
+              {/* File Upload */}
+              {uploadMethod === 'file' && (
+                <>
+                  {!preview ? (
+                    <label className="block border-2 border-dashed border-whisper-plum/20 rounded-lg p-8 text-center cursor-pointer hover:border-whisper-plum/40">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                      <p className="font-cormorant text-whisper-inkBlack/70">
+                        Click to upload image
+                      </p>
+                    </label>
+                  ) : (
+                    <div className="relative">
+                      <Image
+                        src={preview}
+                        alt="Preview"
+                        width={200}
+                        height={280}
+                        className="rounded-lg mx-auto"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFile(null);
+                          setPreview(null);
+                        }}
+                        className="mt-2 text-sm font-cormorant text-whisper-plum/70 hover:text-whisper-plum block mx-auto"
+                      >
+                        Change image
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
             <button
               type="submit"
-              disabled={!file || isUploading}
+              disabled={(!file && !imageUrl) || isUploading}
               className={`
                 w-full py-3 rounded-full font-cormorant text-lg
                 ${
-                  file && !isUploading
+                  (file || imageUrl) && !isUploading
                     ? 'bg-whisper-plum text-whisper-parchment hover-shimmer'
                     : 'bg-whisper-sage/20 text-whisper-plum/40 cursor-not-allowed'
                 }
