@@ -66,7 +66,24 @@ export default function AdminImagesPage() {
       const formData = new FormData();
 
       if (uploadMethod === 'url' && imageUrl) {
-        formData.append('imageUrl', imageUrl);
+        // Fetch the image client-side to bypass CORS/403 issues
+        try {
+          const imageResponse = await fetch(imageUrl);
+          if (!imageResponse.ok) {
+            throw new Error(`Failed to fetch: ${imageResponse.status}`);
+          }
+          const imageBlob = await imageResponse.blob();
+
+          // Convert blob to file
+          const fileName = `midjourney-${Date.now()}.${imageBlob.type.split('/')[1] || 'jpg'}`;
+          const imageFile = new File([imageBlob], fileName, { type: imageBlob.type });
+
+          formData.append('file', imageFile);
+        } catch (fetchError) {
+          alert(`Failed to fetch image from URL: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`);
+          setIsUploading(false);
+          return;
+        }
       } else if (file) {
         formData.append('file', file);
       }
