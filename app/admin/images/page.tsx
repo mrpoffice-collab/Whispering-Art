@@ -126,16 +126,49 @@ export default function AdminImagesPage() {
     }
   };
 
+  const handleInitDatabase = async () => {
+    if (!confirm('Initialize database tables? (Safe to run multiple times)')) return;
+
+    try {
+      const password = localStorage.getItem('adminPassword');
+      const response = await fetch('/api/admin/init-db', {
+        method: 'POST',
+        headers: {
+          'x-admin-password': password || '',
+        },
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert('Database initialized successfully!');
+        fetchImages();
+      } else {
+        alert(`Database init failed: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Database init error:', error);
+      alert('Database init failed');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-whisper-parchment p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-cormorant font-light text-whisper-inkBlack mb-2">
-            Curated Image Library
-          </h1>
-          <p className="text-whisper-plum/70 font-cormorant">
-            Upload and manage MidJourney-generated images for your card collection
-          </p>
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-4xl font-cormorant font-light text-whisper-inkBlack mb-2">
+              Curated Image Library
+            </h1>
+            <p className="text-whisper-plum/70 font-cormorant">
+              Upload and manage MidJourney-generated images for your card collection
+            </p>
+          </div>
+          <button
+            onClick={handleInitDatabase}
+            className="px-4 py-2 rounded-lg border border-whisper-plum/30 text-whisper-plum font-cormorant text-sm hover:bg-whisper-plum/10 transition-colors"
+          >
+            Initialize Database
+          </button>
         </div>
 
         {/* Upload Form */}
