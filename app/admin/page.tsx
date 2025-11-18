@@ -34,6 +34,7 @@ export default function AdminDashboard() {
 
     if (response.ok) {
       sessionStorage.setItem('admin_auth', 'true');
+      localStorage.setItem('adminPassword', password); // Store password for API calls
       setIsAuthenticated(true);
       fetchOrders();
     } else {
@@ -249,6 +250,7 @@ export default function AdminDashboard() {
           <button
             onClick={() => {
               sessionStorage.removeItem('admin_auth');
+              localStorage.removeItem('adminPassword');
               setIsAuthenticated(false);
             }}
             className="px-4 py-2 border-2 border-whisper-sage text-whisper-charcoal rounded-lg hover:bg-whisper-sage hover:text-white transition-all"
