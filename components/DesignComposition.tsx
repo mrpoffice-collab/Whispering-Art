@@ -17,8 +17,8 @@ export default function DesignComposition() {
   const [alignment, setAlignment] = useState<'left' | 'center' | 'right'>('center');
   const [showFront, setShowFront] = useState(true);
   const [textPosition, setTextPosition] = useState<'bottom' | 'top' | 'center'>('bottom');
-  const [overlayStyle, setOverlayStyle] = useState<'gradient' | 'scrim' | 'frame' | 'none'>('none');
-  const [frameStyle, setFrameStyle] = useState<'thick' | 'thin' | 'vignette' | 'corners'>('thick');
+  const overlayStyle = 'none'; // Always no overlay
+  const frameStyle = 'thick'; // Not used since overlay is always none
   const [imageScale, setImageScale] = useState<'full' | 'large' | 'medium' | 'small'>('full');
   const [imageVerticalPosition, setImageVerticalPosition] = useState<'top' | 'center' | 'bottom'>('center');
   const [imageHorizontalPosition, setImageHorizontalPosition] = useState<'left' | 'center' | 'right'>('center');
@@ -520,100 +520,6 @@ export default function DesignComposition() {
                   {pos}
                 </button>
               ))}
-            </div>
-          </div>
-
-          {/* Overlay Style (Front Card) */}
-          <div className="paper-card p-4 mb-4">
-            <h4 className="font-cormorant text-whisper-plum mb-3 text-base">
-              Image Treatment
-            </h4>
-            <div className="space-y-2">
-              <button
-                onClick={() => setOverlayStyle('none')}
-                className={`
-                  w-full p-3 rounded-xl border-2 transition-all duration-150 font-cormorant text-left
-                  ${
-                    overlayStyle === 'none'
-                      ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper text-whisper-inkBlack'
-                      : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer text-whisper-plum/70'
-                  }
-                `}
-              >
-                <p className="font-medium">None</p>
-                <p className="text-xs italic">Pure image with strong text shadows</p>
-              </button>
-              <button
-                onClick={() => setOverlayStyle('gradient')}
-                className={`
-                  w-full p-3 rounded-xl border-2 transition-all duration-150 font-cormorant text-left
-                  ${
-                    overlayStyle === 'gradient'
-                      ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper text-whisper-inkBlack'
-                      : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer text-whisper-plum/70'
-                  }
-                `}
-              >
-                <p className="font-medium">Gradient Overlay</p>
-                <p className="text-xs italic">Soft darkening where text appears</p>
-              </button>
-              <button
-                onClick={() => setOverlayStyle('scrim')}
-                className={`
-                  w-full p-3 rounded-xl border-2 transition-all duration-150 font-cormorant text-left
-                  ${
-                    overlayStyle === 'scrim'
-                      ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper text-whisper-inkBlack'
-                      : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer text-whisper-plum/70'
-                  }
-                `}
-              >
-                <p className="font-medium">Subtle Scrim</p>
-                <p className="text-xs italic">Gentle veil over entire image</p>
-              </button>
-              <button
-                onClick={() => setOverlayStyle('frame')}
-                className={`
-                  w-full p-3 rounded-xl border-2 transition-all duration-150 font-cormorant text-left
-                  ${
-                    overlayStyle === 'frame'
-                      ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper text-whisper-inkBlack'
-                      : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer text-whisper-plum/70'
-                  }
-                `}
-              >
-                <p className="font-medium">Paper Frame</p>
-                <p className="text-xs italic">Elegant border with enhanced shadows</p>
-              </button>
-
-              {/* Frame Style Options - show when frame is selected */}
-              {overlayStyle === 'frame' && (
-                <div className="pl-4 pt-2 space-y-2 border-l-2 border-whisper-plum/20">
-                  <p className="text-xs font-cormorant text-whisper-plum/60 italic mb-2">Frame Style:</p>
-                  {[
-                    { value: 'thick', label: 'Thick Border', desc: 'iPad-style wide frame' },
-                    { value: 'thin', label: 'Thin Border', desc: 'Elegant minimal frame' },
-                    { value: 'vignette', label: 'Vignette', desc: 'Soft darkened edges' },
-                    { value: 'corners', label: 'Corner Accents', desc: 'Decorative corner brackets' },
-                  ].map((frame) => (
-                    <button
-                      key={frame.value}
-                      onClick={() => setFrameStyle(frame.value as any)}
-                      className={`
-                        w-full p-2 rounded-lg border transition-all duration-150 font-cormorant text-left text-sm
-                        ${
-                          frameStyle === frame.value
-                            ? 'border-whisper-plum/30 bg-whisper-plum/5 text-whisper-inkBlack'
-                            : 'border-whisper-plum/10 hover:border-whisper-plum/20 text-whisper-plum/60'
-                        }
-                      `}
-                    >
-                      <p className="font-medium">{frame.label}</p>
-                      <p className="text-xs italic opacity-70">{frame.desc}</p>
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
 
