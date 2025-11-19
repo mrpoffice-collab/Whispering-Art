@@ -9,28 +9,42 @@ interface PrintableCardProps {
 
 export default function PrintableCard({ design }: PrintableCardProps) {
   const { image, text, layout } = design;
-  const { fontFamily, signatureFont, alignment, textPosition, overlayStyle, frameStyle } = layout;
+  const {
+    fontFamily,
+    signatureFont,
+    alignment,
+    textPosition,
+    overlayStyle,
+    frameStyle,
+    imageScale = 'full',
+    imageVerticalPosition = 'center',
+    imageHorizontalPosition = 'center'
+  } = layout;
 
   return (
     <div className="print-only">
       {/* Front of Card */}
       <div className="print-page">
         <div className="card-front">
-          {/* Background Image */}
-          {image.url.startsWith('http') ? (
-            <img
-              src={image.url}
-              alt="Card artwork"
-              className="card-image"
-            />
-          ) : (
-            <Image
-              src={image.url}
-              alt="Card artwork"
-              fill
-              className="card-image"
-            />
-          )}
+          {/* Background Image with scale and position */}
+          <div className={`card-image-container card-image-v-${imageVerticalPosition} card-image-h-${imageHorizontalPosition}`}>
+            <div className={`card-image-wrapper card-image-scale-${imageScale}`}>
+              {image.url.startsWith('http') ? (
+                <img
+                  src={image.url}
+                  alt="Card artwork"
+                  className="card-image"
+                />
+              ) : (
+                <Image
+                  src={image.url}
+                  alt="Card artwork"
+                  fill
+                  className="card-image"
+                />
+              )}
+            </div>
+          </div>
 
           {/* Overlay styles */}
           {overlayStyle === 'gradient' && (
@@ -155,10 +169,60 @@ export default function PrintableCard({ design }: PrintableCardProps) {
             background: #F9F4EE;
           }
 
+          .card-image-container {
+            position: absolute;
+            inset: 0;
+            display: flex;
+          }
+
+          /* Vertical positioning */
+          .card-image-v-top {
+            align-items: flex-start;
+          }
+          .card-image-v-center {
+            align-items: center;
+          }
+          .card-image-v-bottom {
+            align-items: flex-end;
+          }
+
+          /* Horizontal positioning */
+          .card-image-h-left {
+            justify-content: flex-start;
+          }
+          .card-image-h-center {
+            justify-content: center;
+          }
+          .card-image-h-right {
+            justify-content: flex-end;
+          }
+
+          /* Image scale */
+          .card-image-wrapper {
+            position: relative;
+          }
+          .card-image-scale-small {
+            width: 60%;
+            height: 60%;
+          }
+          .card-image-scale-medium {
+            width: 80%;
+            height: 80%;
+          }
+          .card-image-scale-large {
+            width: 90%;
+            height: 90%;
+          }
+          .card-image-scale-full {
+            width: 100%;
+            height: 100%;
+          }
+
           .card-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: 8px;
           }
 
           /* Overlays */

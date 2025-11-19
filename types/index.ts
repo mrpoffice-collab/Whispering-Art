@@ -67,6 +67,9 @@ export interface CardDesign {
     textPosition: 'bottom' | 'top' | 'center';
     overlayStyle: 'gradient' | 'scrim' | 'frame' | 'none';
     frameStyle: 'thick' | 'thin' | 'vignette' | 'corners';
+    imageScale?: 'full' | 'large' | 'medium' | 'small';
+    imageVerticalPosition?: 'top' | 'center' | 'bottom';
+    imageHorizontalPosition?: 'left' | 'center' | 'right';
   };
   createdAt: Date;
   updatedAt: Date;

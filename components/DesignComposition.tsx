@@ -19,6 +19,9 @@ export default function DesignComposition() {
   const [textPosition, setTextPosition] = useState<'bottom' | 'top' | 'center'>('bottom');
   const [overlayStyle, setOverlayStyle] = useState<'gradient' | 'scrim' | 'frame' | 'none'>('gradient');
   const [frameStyle, setFrameStyle] = useState<'thick' | 'thin' | 'vignette' | 'corners'>('thick');
+  const [imageScale, setImageScale] = useState<'full' | 'large' | 'medium' | 'small'>('full');
+  const [imageVerticalPosition, setImageVerticalPosition] = useState<'top' | 'center' | 'bottom'>('center');
+  const [imageHorizontalPosition, setImageHorizontalPosition] = useState<'left' | 'center' | 'right'>('center');
 
   if (!intent || !selectedImage || !generatedText) return null;
 
@@ -37,6 +40,9 @@ export default function DesignComposition() {
         textPosition,
         overlayStyle,
         frameStyle,
+        imageScale,
+        imageVerticalPosition,
+        imageHorizontalPosition,
       },
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -98,20 +104,38 @@ export default function DesignComposition() {
             {showFront ? (
               // Front of Card
               <div className="aspect-[5/7] bg-whisper-parchment rounded-2xl shadow-paper-lg overflow-hidden relative">
-                {selectedImage.url.startsWith('http') ? (
-                  <img
-                    src={selectedImage.url}
-                    alt="Card artwork"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <Image
-                    src={selectedImage.url}
-                    alt="Card artwork"
-                    fill
-                    className="object-cover"
-                  />
-                )}
+                {/* Image Container with scale and position */}
+                <div className={`absolute inset-0 flex ${
+                  imageVerticalPosition === 'top' ? 'items-start' :
+                  imageVerticalPosition === 'bottom' ? 'items-end' :
+                  'items-center'
+                } ${
+                  imageHorizontalPosition === 'left' ? 'justify-start' :
+                  imageHorizontalPosition === 'right' ? 'justify-end' :
+                  'justify-center'
+                }`}>
+                  <div className={`relative ${
+                    imageScale === 'small' ? 'w-[60%] h-[60%]' :
+                    imageScale === 'medium' ? 'w-[80%] h-[80%]' :
+                    imageScale === 'large' ? 'w-[90%] h-[90%]' :
+                    'w-full h-full'
+                  }`}>
+                    {selectedImage.url.startsWith('http') ? (
+                      <img
+                        src={selectedImage.url}
+                        alt="Card artwork"
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    ) : (
+                      <Image
+                        src={selectedImage.url}
+                        alt="Card artwork"
+                        fill
+                        className="object-cover rounded-lg"
+                      />
+                    )}
+                  </div>
+                </div>
 
                 {/* Overlay styles */}
                 {overlayStyle === 'gradient' && (
@@ -411,6 +435,84 @@ export default function DesignComposition() {
             <p className="text-xs font-cormorant text-whisper-plum/60 mt-3 italic text-center">
               Position text where it reads best with your image
             </p>
+          </div>
+
+          {/* Image Size */}
+          <div className="paper-card p-4 mb-4">
+            <h4 className="font-cormorant text-whisper-plum mb-3 text-base">
+              Image Size
+            </h4>
+            <div className="grid grid-cols-4 gap-2">
+              {(['small', 'medium', 'large', 'full'] as const).map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setImageScale(size)}
+                  className={`
+                    p-3 rounded-xl border-2 transition-all duration-150 capitalize font-cormorant text-sm
+                    ${
+                      imageScale === size
+                        ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper text-whisper-inkBlack'
+                        : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer text-whisper-plum/70'
+                    }
+                  `}
+                >
+                  {size === 'small' ? '60%' : size === 'medium' ? '80%' : size === 'large' ? '90%' : '100%'}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs font-cormorant text-whisper-plum/60 mt-3 italic text-center">
+              Control how much of the card the image fills
+            </p>
+          </div>
+
+          {/* Image Vertical Position */}
+          <div className="paper-card p-4 mb-4">
+            <h4 className="font-cormorant text-whisper-plum mb-3 text-base">
+              Image Vertical Position
+            </h4>
+            <div className="grid grid-cols-3 gap-3">
+              {(['top', 'center', 'bottom'] as const).map((pos) => (
+                <button
+                  key={pos}
+                  onClick={() => setImageVerticalPosition(pos)}
+                  className={`
+                    p-4 rounded-xl border-2 transition-all duration-150 capitalize font-cormorant
+                    ${
+                      imageVerticalPosition === pos
+                        ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper text-whisper-inkBlack'
+                        : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer text-whisper-plum/70'
+                    }
+                  `}
+                >
+                  {pos}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Image Horizontal Position */}
+          <div className="paper-card p-4 mb-4">
+            <h4 className="font-cormorant text-whisper-plum mb-3 text-base">
+              Image Horizontal Position
+            </h4>
+            <div className="grid grid-cols-3 gap-3">
+              {(['left', 'center', 'right'] as const).map((pos) => (
+                <button
+                  key={pos}
+                  onClick={() => setImageHorizontalPosition(pos)}
+                  className={`
+                    p-4 rounded-xl border-2 transition-all duration-150 capitalize font-cormorant
+                    ${
+                      imageHorizontalPosition === pos
+                        ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper text-whisper-inkBlack'
+                        : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer text-whisper-plum/70'
+                    }
+                  `}
+                >
+                  {pos}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Overlay Style (Front Card) */}

@@ -37,16 +37,55 @@ async function addFrontPage(pdf: jsPDF, design: CardDesign, orderId?: string) {
       pdf.text(`#${orderId.slice(-8)}`, CARD_WIDTH - 8, 12, { align: 'right' });
     }
 
-    // Add background image
+    // Add background image with scale and position
     if (design.image.blobUrl || design.image.url) {
       const imageUrl = design.image.blobUrl || design.image.url;
+
+      // Get image scale and position settings
+      const imageScale = (design.layout as any).imageScale || 'full';
+      const imageVerticalPosition = (design.layout as any).imageVerticalPosition || 'center';
+      const imageHorizontalPosition = (design.layout as any).imageHorizontalPosition || 'center';
+
+      // Calculate dimensions based on scale
+      let imgWidth = CARD_WIDTH;
+      let imgHeight = CARD_HEIGHT;
+
+      if (imageScale === 'small') {
+        imgWidth = CARD_WIDTH * 0.6;
+        imgHeight = CARD_HEIGHT * 0.6;
+      } else if (imageScale === 'medium') {
+        imgWidth = CARD_WIDTH * 0.8;
+        imgHeight = CARD_HEIGHT * 0.8;
+      } else if (imageScale === 'large') {
+        imgWidth = CARD_WIDTH * 0.9;
+        imgHeight = CARD_HEIGHT * 0.9;
+      }
+
+      // Calculate position based on alignment
+      let imgX = 0;
+      let imgY = 0;
+
+      // Horizontal positioning
+      if (imageHorizontalPosition === 'center') {
+        imgX = (CARD_WIDTH - imgWidth) / 2;
+      } else if (imageHorizontalPosition === 'right') {
+        imgX = CARD_WIDTH - imgWidth;
+      }
+
+      // Vertical positioning
+      if (imageVerticalPosition === 'center') {
+        imgY = (CARD_HEIGHT - imgHeight) / 2;
+      } else if (imageVerticalPosition === 'bottom') {
+        imgY = CARD_HEIGHT - imgHeight;
+      }
+
       pdf.addImage(
         imageUrl,
         'JPEG',
-        0,
-        0,
-        CARD_WIDTH,
-        CARD_HEIGHT,
+        imgX,
+        imgY,
+        imgWidth,
+        imgHeight,
         undefined,
         'FAST'
       );
