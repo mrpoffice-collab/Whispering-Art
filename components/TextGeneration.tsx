@@ -80,6 +80,15 @@ export default function TextGeneration() {
         <p className="text-lg font-cormorant italic text-whisper-plum/70">
           AI-crafted prose to match your art
         </p>
+
+        {/* Gentle instruction */}
+        <div className="mt-8 max-w-2xl mx-auto">
+          <p className="text-sm font-cormorant text-whisper-inkBlack/60 leading-relaxed">
+            Each word has been thoughtfully woven to complement your chosen image and sentiment.
+            Feel free to refine these whispers—make them yours, let them carry your voice,
+            and watch as they breathe life into your creation.
+          </p>
+        </div>
       </div>
 
       {isGenerating && !frontCaption ? (
