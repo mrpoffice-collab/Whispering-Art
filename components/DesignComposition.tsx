@@ -17,7 +17,7 @@ export default function DesignComposition() {
   const [alignment, setAlignment] = useState<'left' | 'center' | 'right'>('center');
   const [showFront, setShowFront] = useState(true);
   const [textPosition, setTextPosition] = useState<'bottom' | 'top' | 'center'>('bottom');
-  const [overlayStyle, setOverlayStyle] = useState<'gradient' | 'scrim' | 'frame' | 'none'>('gradient');
+  const [overlayStyle, setOverlayStyle] = useState<'gradient' | 'scrim' | 'frame' | 'none'>('none');
   const [frameStyle, setFrameStyle] = useState<'thick' | 'thin' | 'vignette' | 'corners'>('thick');
   const [imageScale, setImageScale] = useState<'full' | 'large' | 'medium' | 'small'>('full');
   const [imageVerticalPosition, setImageVerticalPosition] = useState<'top' | 'center' | 'bottom'>('center');
