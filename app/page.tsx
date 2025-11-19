@@ -9,6 +9,13 @@ import Checkout from '@/components/Checkout';
 
 export default function Home() {
   const step = useCardStore((state) => state.step);
+  const reset = useCardStore((state) => state.reset);
+
+  const handleStartOver = () => {
+    if (confirm('Are you sure you want to start over? Your current progress will be lost.')) {
+      reset();
+    }
+  };
 
   return (
     <main className="min-h-screen paper-bg relative">
@@ -33,13 +40,23 @@ export default function Home() {
 
       {/* Signature Header - flowing script */}
       <header className="backdrop-blur-sm sticky top-0 z-50 border-b border-whisper-plum/10">
-        <div className="max-w-6xl mx-auto px-8 py-6">
+        <div className="max-w-6xl mx-auto px-8 py-6 relative">
           <h1 className="text-6xl font-greatVibes text-whisper-inkBlack text-center tracking-wide">
             Whispering Art
           </h1>
           <p className="text-center text-whisper-plum/70 mt-1 font-cormorant italic text-xs tracking-widest">
             Where every image finds its voice
           </p>
+
+          {/* Start Over Button - only show when past step 1 */}
+          {step > 1 && (
+            <button
+              onClick={handleStartOver}
+              className="absolute top-6 right-8 px-4 py-2 rounded-full border-2 border-whisper-plum/30 text-whisper-plum font-cormorant text-sm hover:bg-whisper-plum/10 hover:border-whisper-plum/50 transition-all duration-150 hover-shimmer"
+            >
+              ↻ Start Over
+            </button>
+          )}
         </div>
       </header>
 
