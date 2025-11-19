@@ -151,6 +151,7 @@ export interface CardCreationStore {
   setStep: (step: 1 | 2 | 3 | 4 | 5) => void;
   setIntent: (intent: CardIntent) => void;
   setImage: (image: CardImage) => void;
+  updateGeneratedText: (text: CardText) => void;
   setText: (text: CardText) => void;
   setFinalDesign: (design: CardDesign) => void;
   reset: () => void;

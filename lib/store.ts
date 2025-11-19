@@ -14,6 +14,8 @@ export const useCardStore = create<CardCreationStore>((set) => ({
 
   setImage: (image) => set({ selectedImage: image, step: 3 }),
 
+  updateGeneratedText: (text) => set({ generatedText: text }),
+
   setText: (text) => set({ generatedText: text, step: 4 }),
 
   setFinalDesign: (design) => set({ finalDesign: design, step: 5 }),

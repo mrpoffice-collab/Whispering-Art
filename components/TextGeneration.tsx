@@ -7,12 +7,14 @@ import type { CardText } from '@/types';
 export default function TextGeneration() {
   const intent = useCardStore((state) => state.intent);
   const selectedImage = useCardStore((state) => state.selectedImage);
+  const generatedText = useCardStore((state) => state.generatedText);
+  const updateGeneratedText = useCardStore((state) => state.updateGeneratedText);
   const setText = useCardStore((state) => state.setText);
   const setStep = useCardStore((state) => state.setStep);
 
   const [isGenerating, setIsGenerating] = useState(false);
-  const [frontCaption, setFrontCaption] = useState('');
-  const [insideProse, setInsideProse] = useState('');
+  const [frontCaption, setFrontCaption] = useState(generatedText?.frontCaption || '');
+  const [insideProse, setInsideProse] = useState(generatedText?.insideProse || '');
   const [userGuidance, setUserGuidance] = useState('');
 
   if (!intent || !selectedImage) return null;
@@ -35,6 +37,14 @@ export default function TextGeneration() {
       const data = await response.json();
       setFrontCaption(data.frontCaption);
       setInsideProse(data.insideProse);
+
+      // Save to store immediately so it persists when navigating back
+      const cardText: CardText = {
+        frontCaption: data.frontCaption,
+        insideProse: data.insideProse,
+        signature: intent.senderName,
+      };
+      updateGeneratedText(cardText);
     } catch (error) {
       console.error('Generation failed:', error);
       alert('Failed to generate text. Please try again.');
@@ -57,8 +67,7 @@ export default function TextGeneration() {
         insideProse,
         signature: intent.senderName,
       };
-      setText(cardText);
-      setStep(4);
+      setText(cardText); // This also advances to step 4
     }
   };
 
@@ -68,6 +77,26 @@ export default function TextGeneration() {
 
   const handleRefine = () => {
     generateText();
+  };
+
+  const handleFrontCaptionChange = (value: string) => {
+    setFrontCaption(value);
+    // Sync to store so it persists when navigating back
+    updateGeneratedText({
+      frontCaption: value,
+      insideProse,
+      signature: intent.senderName,
+    });
+  };
+
+  const handleInsideProseChange = (value: string) => {
+    setInsideProse(value);
+    // Sync to store so it persists when navigating back
+    updateGeneratedText({
+      frontCaption,
+      insideProse: value,
+      signature: intent.senderName,
+    });
   };
 
   return (
@@ -125,7 +154,7 @@ export default function TextGeneration() {
               </h3>
               <textarea
                 value={frontCaption}
-                onChange={(e) => setFrontCaption(e.target.value)}
+                onChange={(e) => handleFrontCaptionChange(e.target.value)}
                 className="w-full p-4 border-2 border-whisper-plum/20 rounded-xl focus:border-whisper-plum/40 focus:outline-none font-cormorant text-xl text-center bg-transparent resize-none"
                 rows={4}
                 placeholder="Your front caption..."
@@ -142,7 +171,7 @@ export default function TextGeneration() {
               </h3>
               <textarea
                 value={insideProse}
-                onChange={(e) => setInsideProse(e.target.value)}
+                onChange={(e) => handleInsideProseChange(e.target.value)}
                 className="w-full p-4 border-2 border-whisper-plum/20 rounded-xl focus:border-whisper-plum/40 focus:outline-none font-cormorant text-base leading-relaxed bg-transparent resize-none"
                 rows={7}
                 placeholder="Your heartfelt message..."
