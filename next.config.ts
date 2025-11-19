@@ -9,6 +9,19 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Allow images from Vercel Blob Storage and MidJourney CDN
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.public.blob.vercel-storage.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.midjourney.com',
+      },
+    ],
+  },
 };
 
 export default nextConfig;
