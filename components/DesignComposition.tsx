@@ -204,7 +204,7 @@ export default function DesignComposition() {
                       style={{
                         fontFamily: fontFamily === 'cormorant' ? 'var(--font-cormorant), serif' : 'var(--font-baskerville), serif',
                         textShadow: overlayStyle === 'none'
-                          ? '1px 1px 3px rgba(13,11,11,0.8), 0 0 8px rgba(13,11,11,0.6)'
+                          ? '1px 1px 3px rgba(13,11,11,0.8)'
                           : overlayStyle === 'frame' && frameStyle === 'vignette'
                           ? '1px 1px 4px rgba(13,11,11,0.7)'
                           : overlayStyle === 'frame'
