@@ -152,6 +152,7 @@ export default function PrintableCard({ design }: PrintableCardProps) {
             display: block;
           }
 
+          /* Optimized for borderless printing on Epson 8550 */
           .print-page {
             page-break-after: always;
             width: 5in;

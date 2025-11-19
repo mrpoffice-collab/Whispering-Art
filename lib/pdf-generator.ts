@@ -6,7 +6,9 @@ import type { CardDesign } from '@/types';
 // PDF uses points (1 inch = 72 points)
 const CARD_WIDTH = 5 * 72; // 360 points
 const CARD_HEIGHT = 7 * 72; // 504 points
-const SAFE_MARGIN = 0.25 * 72; // 18 points (0.25 inch safe margin)
+// Reduced margin for borderless printing on Epson 8550
+// Image goes edge-to-edge, text has minimal margin for readability
+const SAFE_MARGIN = 0.125 * 72; // 9 points (0.125 inch margin for text)
 
 // Helper function to convert hex color to RGB
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
