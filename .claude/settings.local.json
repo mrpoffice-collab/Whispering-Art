@@ -20,7 +20,13 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push)",
-      "Bash(copy:*)"
+      "Bash(copy:*)",
+      "WebFetch(domain:whispering-6hkudaidu-meschelles-projects.vercel.app)",
+      "Bash(npm run start)",
+      "Bash(timeout /t 5 /nobreak)",
+      "Bash(dir /B:*)",
+      "Bash(npm install:*)",
+      "WebFetch(domain:whispering-88h9b9n1w-meschelles-projects.vercel.app)"
     ],
     "deny": [],
     "ask": []

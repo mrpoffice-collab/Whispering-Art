@@ -18,10 +18,50 @@ export default function AdminImagesPage() {
   const [style, setStyle] = useState('watercolor');
   const [midjourneyPrompt, setMidjourneyPrompt] = useState('');
   const [tags, setTags] = useState('');
+  const [autoTags, setAutoTags] = useState<string[]>([]);
+  const [isGeneratingAITags, setIsGeneratingAITags] = useState(false);
 
   useEffect(() => {
     fetchImages();
   }, []);
+
+  // Extract keywords from MidJourney prompt
+  const extractKeywords = (prompt: string): string[] => {
+    if (!prompt) return [];
+
+    // Common stop words to filter out
+    const stopWords = new Set([
+      'a', 'an', 'and', 'the', 'with', 'for', 'in', 'on', 'at', 'to', 'of',
+      'high', 'quality', 'design', 'composition', 'image', 'picture', 'style',
+      '--ar', '5:7', '16:9', '4:3', // aspect ratio flags
+    ]);
+
+    // Extract words, remove punctuation, lowercase
+    const words = prompt
+      .toLowerCase()
+      .replace(/--\w+\s+[\d:]+/g, '') // Remove MJ parameters like --ar 5:7
+      .replace(/[^\w\s]/g, ' ') // Remove punctuation
+      .split(/\s+/)
+      .filter(word => word.length > 2 && !stopWords.has(word))
+      .filter((word, index, self) => self.indexOf(word) === index); // Remove duplicates
+
+    return words;
+  };
+
+  // Auto-extract keywords when prompt changes
+  useEffect(() => {
+    if (midjourneyPrompt) {
+      const keywords = extractKeywords(midjourneyPrompt);
+      setAutoTags(keywords);
+      // Only auto-populate if tags field is empty
+      if (!tags) {
+        setTags(keywords.join(', '));
+      }
+    } else {
+      setAutoTags([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [midjourneyPrompt]);
 
   const fetchImages = async () => {
     setIsLoading(true);
@@ -168,6 +208,42 @@ export default function AdminImagesPage() {
     }
   };
 
+  const handleGenerateAITags = async () => {
+    if (!preview && !imageUrl) {
+      alert('Please select or upload an image first');
+      return;
+    }
+
+    setIsGeneratingAITags(true);
+    try {
+      const imageToAnalyze = preview || imageUrl;
+
+      const response = await fetch('/api/admin/generate-ai-tags', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageUrl: imageToAnalyze }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.tags) {
+        // Merge AI tags with existing tags
+        const existingTags = tags.split(',').map(t => t.trim()).filter(Boolean);
+        const allTags = [...new Set([...existingTags, ...data.tags])];
+        setTags(allTags.join(', '));
+        alert(`Added ${data.tags.length} AI-generated tags!`);
+      } else {
+        alert(`AI tag generation failed: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('AI tag generation error:', error);
+      alert('AI tag generation failed');
+    } finally {
+      setIsGeneratingAITags(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-whisper-parchment p-8">
       <div className="max-w-7xl mx-auto">
@@ -270,16 +346,34 @@ export default function AdminImagesPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-cormorant text-whisper-plum mb-2">
-                Tags (comma separated)
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-cormorant text-whisper-plum">
+                  Tags (comma separated)
+                </label>
+                <button
+                  type="button"
+                  onClick={handleGenerateAITags}
+                  disabled={isGeneratingAITags || (!preview && !imageUrl)}
+                  className="px-3 py-1 text-xs rounded-lg bg-whisper-gold/20 text-whisper-inkBlack font-cormorant hover:bg-whisper-gold/40 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isGeneratingAITags ? '✨ Analyzing...' : '✨ Generate AI Tags'}
+                </button>
+              </div>
+              {autoTags.length > 0 && (
+                <p className="text-xs text-whisper-plum/60 mb-2 font-cormorant italic">
+                  Auto-extracted: {autoTags.join(', ')}
+                </p>
+              )}
               <input
                 type="text"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
-                placeholder="flowers, spring, pastel"
+                placeholder="Add more tags or edit auto-extracted ones..."
                 className="w-full px-4 py-2 rounded-lg border border-whisper-plum/20 font-cormorant"
               />
+              <p className="text-xs text-whisper-inkBlack/50 mt-1 font-cormorant">
+                Tags are auto-extracted from your MidJourney prompt. Click "Generate AI Tags" for AI-powered analysis.
+              </p>
             </div>
 
             <div>
