@@ -163,7 +163,7 @@ export default function TextGeneration() {
                 type="text"
                 value={userGuidance}
                 onChange={(e) => setUserGuidance(e.target.value)}
-                placeholder='e.g., "softer", "warmer", "more poetic"'
+                placeholder='e.g., "for a 6 year old", "more humorous", "shorter"'
                 className="flex-1 px-4 py-3 border-2 border-whisper-plum/20 rounded-full focus:border-whisper-plum/40 focus:outline-none font-cormorant"
                 onKeyDown={(e) => e.key === 'Enter' && handleRefine()}
               />
@@ -179,8 +179,32 @@ export default function TextGeneration() {
                 {isGenerating ? 'Refining...' : 'Refine'}
               </button>
             </div>
+
+            {/* Quick suggestions */}
+            <div className="flex flex-wrap gap-2 justify-center mb-3">
+              {[
+                'for a 6 year old',
+                'for a teenager',
+                'more humorous',
+                'shorter and simple',
+                'more formal',
+                'add scripture',
+              ].map((suggestion) => (
+                <button
+                  key={suggestion}
+                  onClick={() => {
+                    setUserGuidance(suggestion);
+                    setTimeout(() => handleRefine(), 100);
+                  }}
+                  className="px-3 py-1 text-xs rounded-full border border-whisper-plum/30 text-whisper-plum font-cormorant hover:bg-whisper-plum/10 hover:border-whisper-plum/50 transition-all"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+
             <p className="text-xs font-cormorant text-whisper-plum/60 text-center italic">
-              Provide guidance to adjust the tone and style
+              Provide guidance to adjust the tone and style, or try a quick suggestion
             </p>
           </div>
 
