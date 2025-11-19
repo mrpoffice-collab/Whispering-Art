@@ -18,7 +18,8 @@ export default function PrintableCard({ design }: PrintableCardProps) {
     frameStyle,
     imageScale = 'full',
     imageVerticalPosition = 'center',
-    imageHorizontalPosition = 'center'
+    imageHorizontalPosition = 'center',
+    backgroundColor = '#F9F4EE'
   } = layout;
 
   return (
@@ -166,7 +167,7 @@ export default function PrintableCard({ design }: PrintableCardProps) {
             height: 100%;
             position: relative;
             overflow: hidden;
-            background: #F9F4EE;
+            background: ${backgroundColor};
           }
 
           .card-image-container {

@@ -22,6 +22,7 @@ export default function DesignComposition() {
   const [imageScale, setImageScale] = useState<'full' | 'large' | 'medium' | 'small'>('full');
   const [imageVerticalPosition, setImageVerticalPosition] = useState<'top' | 'center' | 'bottom'>('center');
   const [imageHorizontalPosition, setImageHorizontalPosition] = useState<'left' | 'center' | 'right'>('center');
+  const [backgroundColor, setBackgroundColor] = useState<string>('#F9F4EE'); // Default creamy parchment
 
   if (!intent || !selectedImage || !generatedText) return null;
 
@@ -43,6 +44,7 @@ export default function DesignComposition() {
         imageScale,
         imageVerticalPosition,
         imageHorizontalPosition,
+        backgroundColor,
       },
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -103,7 +105,10 @@ export default function DesignComposition() {
           <div className="paper-card p-8">
             {showFront ? (
               // Front of Card
-              <div className="aspect-[5/7] bg-whisper-parchment rounded-2xl shadow-paper-lg overflow-hidden relative">
+              <div
+                className="aspect-[5/7] rounded-2xl shadow-paper-lg overflow-hidden relative"
+                style={{ backgroundColor }}
+              >
                 {/* Image Container with scale and position */}
                 <div className={`absolute inset-0 flex ${
                   imageVerticalPosition === 'top' ? 'items-start' :
@@ -214,7 +219,10 @@ export default function DesignComposition() {
               </div>
             ) : (
               // Inside of Card
-              <div className="aspect-[5/7] bg-whisper-parchment rounded-2xl shadow-paper-lg p-10 flex flex-col justify-center">
+              <div
+                className="aspect-[5/7] rounded-2xl shadow-paper-lg p-10 flex flex-col justify-center"
+                style={{ backgroundColor }}
+              >
                 <div className={`${alignment === 'center' ? 'text-center' : alignment === 'right' ? 'text-right' : 'text-left'}`}>
                   <p
                     className="text-whisper-inkBlack leading-relaxed mb-8 text-lg"
@@ -513,6 +521,45 @@ export default function DesignComposition() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Background Color */}
+          <div className="paper-card p-4 mb-4">
+            <h4 className="font-cormorant text-whisper-plum mb-3 text-base">
+              Card Background Color
+            </h4>
+            <div className="grid grid-cols-4 gap-3">
+              {[
+                { name: 'Creamy Parchment', color: '#F9F4EE' },
+                { name: 'Pure White', color: '#FFFFFF' },
+                { name: 'Soft Ivory', color: '#FFFFF0' },
+                { name: 'Light Gray', color: '#F5F5F5' },
+              ].map((bg) => (
+                <button
+                  key={bg.color}
+                  onClick={() => setBackgroundColor(bg.color)}
+                  className={`
+                    p-3 rounded-xl border-2 transition-all duration-150 flex flex-col items-center gap-2
+                    ${
+                      backgroundColor === bg.color
+                        ? 'border-whisper-plum/40 bg-whisper-plum/10 shadow-paper'
+                        : 'border-whisper-plum/20 hover:border-whisper-plum/30 hover-shimmer'
+                    }
+                  `}
+                >
+                  <div
+                    className="w-12 h-12 rounded-lg border-2 border-whisper-plum/20 shadow-sm"
+                    style={{ backgroundColor: bg.color }}
+                  />
+                  <p className="text-xs font-cormorant text-whisper-inkBlack text-center leading-tight">
+                    {bg.name}
+                  </p>
+                </button>
+              ))}
+            </div>
+            <p className="text-xs font-cormorant text-whisper-plum/60 mt-3 italic text-center">
+              Match your paper stock or use pure white for images with white backgrounds
+            </p>
           </div>
 
           {/* Overlay Style (Front Card) */}

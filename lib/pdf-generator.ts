@@ -8,6 +8,18 @@ const CARD_WIDTH = 5 * 72; // 360 points
 const CARD_HEIGHT = 7 * 72; // 504 points
 const SAFE_MARGIN = 0.25 * 72; // 18 points (0.25 inch safe margin)
 
+// Helper function to convert hex color to RGB
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : { r: 249, g: 244, b: 238 }; // Default to parchment color
+}
+
 export async function generateCardPDF(design: CardDesign, orderId?: string): Promise<Blob> {
   // Create PDF with A7 dimensions
   const pdf = new jsPDF({
@@ -29,6 +41,12 @@ export async function generateCardPDF(design: CardDesign, orderId?: string): Pro
 
 async function addFrontPage(pdf: jsPDF, design: CardDesign, orderId?: string) {
   try {
+    // Add background color
+    const backgroundColor = (design.layout as any).backgroundColor || '#F9F4EE';
+    const bgColor = hexToRgb(backgroundColor);
+    pdf.setFillColor(bgColor.r, bgColor.g, bgColor.b);
+    pdf.rect(0, 0, CARD_WIDTH, CARD_HEIGHT, 'F');
+
     // Add order ID in top right corner for matching
     if (orderId) {
       pdf.setFont('helvetica', 'normal');
@@ -211,7 +229,9 @@ async function addFrontPage(pdf: jsPDF, design: CardDesign, orderId?: string) {
 
 async function addInsidePage(pdf: jsPDF, design: CardDesign, orderId?: string) {
   // Background color for inside
-  pdf.setFillColor(249, 244, 238); // whisper-parchment
+  const backgroundColor = (design.layout as any).backgroundColor || '#F9F4EE';
+  const bgColor = hexToRgb(backgroundColor);
+  pdf.setFillColor(bgColor.r, bgColor.g, bgColor.b);
   pdf.rect(0, 0, CARD_WIDTH, CARD_HEIGHT, 'F');
 
   // Add order ID in top right corner for matching

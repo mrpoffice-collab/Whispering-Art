@@ -70,6 +70,7 @@ export interface CardDesign {
     imageScale?: 'full' | 'large' | 'medium' | 'small';
     imageVerticalPosition?: 'top' | 'center' | 'bottom';
     imageHorizontalPosition?: 'left' | 'center' | 'right';
+    backgroundColor?: string;
   };
   createdAt: Date;
   updatedAt: Date;
