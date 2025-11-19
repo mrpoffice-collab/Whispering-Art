@@ -29,23 +29,40 @@ export default function AdminImagesPage() {
   const extractKeywords = (prompt: string): string[] => {
     if (!prompt) return [];
 
-    // Common stop words to filter out
+    // Comprehensive stop words - filter out generic/common words
     const stopWords = new Set([
-      'a', 'an', 'and', 'the', 'with', 'for', 'in', 'on', 'at', 'to', 'of',
-      'high', 'quality', 'design', 'composition', 'image', 'picture', 'style',
-      '--ar', '5:7', '16:9', '4:3', // aspect ratio flags
+      // Articles, prepositions, conjunctions
+      'a', 'an', 'and', 'the', 'with', 'for', 'in', 'on', 'at', 'to', 'of', 'by', 'from', 'or',
+      // Generic quality descriptors
+      'high', 'quality', 'beautiful', 'elegant', 'stunning', 'amazing', 'gorgeous',
+      'professional', 'detailed', 'intricate', 'perfect', 'exquisite', 'delicate',
+      'lovely', 'pretty', 'nice', 'good', 'great', 'best', 'fine', 'excellent',
+      // Generic art/image terms
+      'art', 'artwork', 'image', 'picture', 'photo', 'photograph', 'painting',
+      'illustration', 'design', 'style', 'composition', 'scene', 'view',
+      'render', 'rendering', 'digital', 'graphic', 'visual', 'aesthetic',
+      // Size/quality technical terms
+      '4k', '8k', 'hd', 'uhd', 'ultra', 'resolution', 'sharp', 'crisp',
+      // Generic mood/atmosphere
+      'atmosphere', 'mood', 'feeling', 'tone', 'vibe', 'energy',
+      // Common MidJourney phrases
+      'highly', 'very', 'extremely', 'super', 'hyper', 'realistic', 'photorealistic',
+      // Aspect ratios
+      '--ar', '5:7', '16:9', '4:3', '2:3', '3:2', '1:1',
     ]);
 
     // Extract words, remove punctuation, lowercase
     const words = prompt
       .toLowerCase()
       .replace(/--\w+\s+[\d:]+/g, '') // Remove MJ parameters like --ar 5:7
+      .replace(/--\w+/g, '') // Remove other MJ flags
       .replace(/[^\w\s]/g, ' ') // Remove punctuation
       .split(/\s+/)
       .filter(word => word.length > 2 && !stopWords.has(word))
       .filter((word, index, self) => self.indexOf(word) === index); // Remove duplicates
 
-    return words;
+    // Limit to top 7 most meaningful words (concrete nouns preferred)
+    return words.slice(0, 7);
   };
 
   // Auto-extract keywords when prompt changes
