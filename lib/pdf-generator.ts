@@ -19,7 +19,7 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
         g: parseInt(result[2], 16),
         b: parseInt(result[3], 16),
       }
-    : { r: 249, g: 244, b: 238 }; // Default to parchment color
+    : { r: 255, g: 255, b: 255 }; // Default to pure white
 }
 
 export async function generateCardPDF(design: CardDesign, orderId?: string): Promise<Blob> {
@@ -43,8 +43,8 @@ export async function generateCardPDF(design: CardDesign, orderId?: string): Pro
 
 async function addFrontPage(pdf: jsPDF, design: CardDesign, orderId?: string) {
   try {
-    // Add background color
-    const backgroundColor = (design.layout as any).backgroundColor || '#F9F4EE';
+    // Add background color - always pure white for printing
+    const backgroundColor = (design.layout as any).backgroundColor || '#FFFFFF';
     const bgColor = hexToRgb(backgroundColor);
     pdf.setFillColor(bgColor.r, bgColor.g, bgColor.b);
     pdf.rect(0, 0, CARD_WIDTH, CARD_HEIGHT, 'F');
@@ -230,8 +230,8 @@ async function addFrontPage(pdf: jsPDF, design: CardDesign, orderId?: string) {
 }
 
 async function addInsidePage(pdf: jsPDF, design: CardDesign, orderId?: string) {
-  // Background color for inside
-  const backgroundColor = (design.layout as any).backgroundColor || '#F9F4EE';
+  // Background color for inside - always pure white for printing
+  const backgroundColor = (design.layout as any).backgroundColor || '#FFFFFF';
   const bgColor = hexToRgb(backgroundColor);
   pdf.setFillColor(bgColor.r, bgColor.g, bgColor.b);
   pdf.rect(0, 0, CARD_WIDTH, CARD_HEIGHT, 'F');
