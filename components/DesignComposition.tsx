@@ -102,11 +102,11 @@ export default function DesignComposition() {
           </div>
 
           {/* Card Display */}
-          <div className="paper-card p-8">
+          <div className="p-8 bg-gradient-to-br from-whisper-sage/10 to-whisper-blush/10 rounded-2xl border-2 border-whisper-plum/10">
             {showFront ? (
               // Front of Card
               <div
-                className="aspect-[5/7] rounded-2xl shadow-paper-lg overflow-hidden relative"
+                className="aspect-[5/7] rounded-lg shadow-2xl overflow-hidden relative border-2 border-white/50"
                 style={{ backgroundColor }}
               >
                 {/* Image Container with scale and position */}
@@ -220,7 +220,7 @@ export default function DesignComposition() {
             ) : (
               // Inside of Card
               <div
-                className="aspect-[5/7] rounded-2xl shadow-paper-lg p-10 flex flex-col justify-center"
+                className="aspect-[5/7] rounded-lg shadow-2xl p-10 flex flex-col justify-center border-2 border-white/50"
                 style={{ backgroundColor }}
               >
                 <div className={`${alignment === 'center' ? 'text-center' : alignment === 'right' ? 'text-right' : 'text-left'}`}>
